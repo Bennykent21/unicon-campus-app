@@ -50,8 +50,6 @@ supabase/
    flutter run
    ```
 
-## What's scaffolded vs. what's next
-
 **Built:**
 - Full 5-tab navigation (Home, Chats, Create, Discover, Profile) matching the mockups, light + dark theme
 - Home Feed: For You / Following / Trending tabs, filter chips, post cards with type-specific badges (Question/General/Marketplace/Job/Event), Helpful/Comment/Save engagement wired to Supabase
@@ -60,8 +58,6 @@ supabase/
 - Discover: category list (Marketplace, Jobs, Events, Scholarships, Clubs, Trending)
 - Profile: header, stats, settings list, dark mode toggle, sign out
 - Supabase schema: profiles, posts, comments, follows, post_helpful/post_saves, conversations/messages, RLS policies, realtime, and the two views the providers query
-
-**Not built yet (good next steps):**
 - Auth screens (`/login`, `/signup`) — currently placeholders
 - Individual Create forms (post composer, listing form, job form, event form)
 - Post detail / comment thread screen
@@ -69,5 +65,3 @@ supabase/
 - Discover category detail screens (Marketplace grid, Jobs list, etc. — same pattern as your second mockup's "detailed views" row)
 - Notifications screen
 - Search
-
-Tell me which of these you want next and I'll build it the same way — full code, wired to this same Supabase schema.
