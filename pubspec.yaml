@@ -1,0 +1,63 @@
+name: university_community_app
+description: "Connect. Learn. Share. Grow. — A unified platform for university students."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Routing
+  go_router: ^14.2.0
+
+  # Backend
+  supabase_flutter: ^2.5.6
+
+  # UI / UX
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
+  google_fonts: ^6.2.1
+  iconsax: ^0.0.8
+  timeago: ^3.6.1
+  flutter_staggered_grid_view: ^0.7.0
+  image_picker: ^1.1.2
+  flutter_chat_ui: ^1.6.15
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.4.0
+  flutter_dotenv: ^5.1.0
+  go_router_builder: ^2.7.1
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  cupertino_icons: ^1.0.6
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  riverpod_generator: ^2.4.0
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/unicon_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
