@@ -1,29 +1,92 @@
-# University Community App
+# UNICON — Campus Community App
+
+A full-stack, cross-platform mobile app that centralizes academic discussion, Q&A, a campus marketplace, job/internship listings, events, and real-time messaging for university students — built solo from schema to UI.
+
+**Stack:** Flutter · Dart · Riverpod · go_router · Supabase (PostgreSQL, Auth, Realtime, Storage)
+
+---
+
+## Why this project is worth a look
+
+Most student projects are CRUD demos. This one required solving real production-grade problems:
+
+- **Row Level Security done properly** — every table is protected by RLS, including policies that needed `SECURITY DEFINER` helper functions to avoid infinite recursion (a genuinely tricky Postgres gotcha most tutorials never cover).
+- **Realtime vs. views** — discovered and fixed a subtle bug class where Supabase Realtime silently never fires for database views (only physical tables), which broke live chat/comment updates until traced to the root cause.
+- **Optimistic UI** — engagement actions (likes, saves, follows) update instantly client-side and reconcile with the server in the background, with rollback on failure.
+- **Feature-first architecture** — ~50 modular Dart files organized by feature (`home`, `chats`, `profile`, `discover`, `create`, `auth`, `notifications`), not by layer, for maintainability at scale.
+
+## Features
+
+- **Auth** — email/password signup with guided profile setup, session-aware routing (auto-redirects based on auth + profile completeness)
+- **Home Feed** — infinite-scroll feed supporting 6 post types (general, question, marketplace, job, event, announcement), tag/type filtering, full-text search, trending topics
+- **Engagement** — helpful votes, saves, comments with accepted-answer marking (Q&A style), reputation scoring via Postgres functions
+- **Profile** — editable profile with avatar upload, followers/following, activity history, dark mode (persisted)
+- **Discover** — category browsing for Marketplace, Jobs, Events, Scholarships
+- **Chat** — real-time 1:1 messaging with image attachments, message deletion, read-state tracking
+- **Notifications** — event-driven via Postgres triggers (comment, helpful, follow, accepted-answer)
+
+## Architecture
+
+```
+lib/
+  core/            # theme, router, shared widgets, Supabase client wrapper
+  features/
+    auth/
+    home/
+    chats/
+    profile/
+    discover/
+    create/
+    notifications/
+supabase/
+  migrations/      # numbered, sequential SQL migrations (schema, RLS, triggers, views)
+```
+
+- **State management:** Riverpod (`StateNotifier` + `FutureProvider`/`StreamProvider`)
+- **Routing:** `go_router` with auth-aware redirects and deep-linkable routes
+- **Backend:** Supabase — Postgres with RLS on every table, Realtime for chat, Storage for images/avatars (public buckets with upload-scoped policies)
+
+## Security highlights
+
+```sql
+-- Example: SECURITY DEFINER used to break RLS recursion on conversation
+-- membership checks (a self-referential policy would otherwise infinite-loop)
+create or replace function is_conversation_participant(_conversation_id uuid, _user_id uuid)
+returns boolean
+language sql
+security definer
+stable
+as $$
+  select exists (
+    select 1 from conversation_participants
+    where conversation_id = _conversation_id and user_id = _user_id
+  );
+$$;
+```
+
+Every insert/select/update/delete policy across posts, comments, messages, follows, and storage objects is scoped to `auth.uid()` — no table is left open by default.
+
+## Screenshots
+
+<!-- Add screenshots here: Home feed, Post detail, Chat, Profile, Discover -->
 
 ## Setup
 
-1. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+1. `flutter pub get`
+2. Copy `.env.example` → `.env`, add your Supabase URL + anon key
+3. Run migrations in `supabase/` sequentially in the Supabase SQL editor
+4. Create `avatars`, `post-images`, and `chat-images` storage buckets (public)
+5. `flutter run`
 
-2. **Run**
-   ```bash
-   flutter run
-   ```
+## Known limitations / roadmap
 
-**Built:**
-- Full 5-tab navigation (Home, Chats, Create, Discover, Profile) matching the mockups, light + dark theme
-- Home Feed: For You / Following / Trending tabs, filter chips, post cards with type-specific badges (Question/General/Marketplace/Job/Event), Helpful/Comment/Save engagement wired to Supabase
-- Chats: DMs/Groups/Channels filter, pinned section, realtime conversation list via Supabase streams
-- Create: full action sheet (routes are stubbed — each option needs its own form screen)
-- Discover: category list (Marketplace, Jobs, Events, Scholarships, Clubs, Trending)
-- Profile: header, stats, settings list, dark mode toggle, sign out
-- Supabase schema: profiles, posts, comments, follows, post_helpful/post_saves, conversations/messages, RLS policies, realtime, and the two views the providers query
-- Auth screens (`/login`, `/signup`) — currently placeholders
-- Individual Create forms (post composer, listing form, job form, event form)
-- Post detail / comment thread screen
-- Individual chat thread screen (message bubbles, sending)
-- Discover category detail screens (Marketplace grid, Jobs list, etc. — same pattern as your second mockup's "detailed views" row)
-- Notifications screen
-- Search
+- Group chats and channels (DMs are fully implemented; groups are schema-ready but UI not yet built)
+- Message reactions and reply-threading
+- Internship application tracking (in progress — extending the Jobs category into a full application flow)
+- Block/mute users
+
+## About
+
+Final year Computer Engineering project, University of Benin. Built end-to-end solo — schema design, backend security, and full Flutter UI.
+
+**Author:** Oghosa Benedict — [LinkedIn](https://linkedin.com/in/oghosabenedict-721119287) · [GitHub](https://github.com/Bennykent21)
