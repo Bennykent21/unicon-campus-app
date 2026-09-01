@@ -1,34 +1,5 @@
 # University Community App
 
-Flutter + Supabase rebuild of the University Community App, structured around
-a feature-based architecture (Riverpod) instead of a single main.dart.
-
-## Project structure
-
-```
-lib/
-  main.dart                 # entry point: loads .env, inits Supabase, runs app
-  app.dart                  # MaterialApp.router + theme wiring
-  core/
-    theme/                  # colors, light/dark ThemeData, theme toggle provider
-    router/                 # go_router config (auth redirect + bottom-nav shell)
-    widgets/                # bottom_nav_shell.dart (shared shell w/ center FAB)
-    supabase/               # SupabaseService wrapper
-    constants/              # shared constants (categories, post types, points)
-  features/
-    home/                   # Home Feed tab
-      screens/home_screen.dart
-      widgets/post_card.dart
-      models/post_model.dart
-      providers/home_provider.dart
-    chats/                  # Chats tab (DMs / Groups / Channels)
-    create/                 # "+" action sheet (Post / Question / Listing / Job / Event / Announcement)
-    discover/               # Marketplace / Jobs / Events / Scholarships / Clubs / Trending
-    profile/                # Profile + settings + dark mode toggle
-supabase/
-  schema.sql                # tables, RLS policies, views, realtime config
-```
-
 ## Setup
 
 1. **Install dependencies**
@@ -36,16 +7,7 @@ supabase/
    flutter pub get
    ```
 
-2. **Configure Supabase**
-   - Copy `.env.example` to `.env` and fill in your project's URL + anon key
-     (Supabase dashboard → Project Settings → API).
-   - Run `supabase/schema.sql` in the Supabase SQL editor to create all
-     tables, RLS policies, and the `posts_with_engagement` /
-     `conversations_for_user` views the app queries.
-   - Create two storage buckets (`post-images`, `avatars`) — see the
-     commented-out lines at the bottom of `schema.sql`.
-
-3. **Run**
+2. **Run**
    ```bash
    flutter run
    ```
