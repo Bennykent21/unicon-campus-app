@@ -67,6 +67,12 @@ $$;
 Every insert/select/update/delete policy across posts, comments, messages, follows, and storage objects is scoped to `auth.uid()` — no table is left open by default.
 
 ## Screenshots
+<img width="1080" height="2340" alt="108745" src="https://github.com/user-attachments/assets/42dbad74-de1c-4d97-90ce-ece10afa82e3" />
+<img width="1080" height="2717" alt="108744" src="https://github.com/user-attachments/assets/916a7a16-818d-4676-9a61-7b4430d4f9c3" />
+<img width="1080" height="2340" alt="108743" src="https://github.com/user-attachments/assets/a306fa13-bc4d-44df-aded-cab46b859957" />
+<img width="1080" height="2340" alt="108742" src="https://github.com/user-attachments/assets/1e3df5fb-cb4c-47a9-aa25-3d6e8cf88ab7" />
+<img width="1080" height="2340" alt="108741" src="https://github.com/user-attachments/assets/531f4f7b-a87a-48d0-bc7c-414af55f8e4f" />
+<img width="1080" height="2340" alt="108740" src="https://github.com/user-attachments/assets/47802263-4c53-490b-bab8-3b6b2f12371c" />
 
 <!-- Add screenshots here: Home feed, Post detail, Chat, Profile, Discover -->
 
