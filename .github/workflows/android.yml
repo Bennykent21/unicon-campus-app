@@ -1,0 +1,87 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # publish the APK as a GitHub Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+
+      # The app reads SUPABASE_URL / SUPABASE_ANON_KEY from .env at startup.
+      # Set them as repository secrets to override. The fallback is this
+      # project's public client (anon) key: it ships inside every APK anyway,
+      # and row level security is what protects the data.
+      - name: Write .env
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          url="${SUPABASE_URL:-https://jynwadokkmenigbbwhqr.supabase.co}"
+          key="${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bndhZG9ra21lbmlnYmJ3aHFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjcyNjcsImV4cCI6MjA4Njg0MzI2N30.wnRv6s13NcMt-rbIWaZyhyKtAmYxQKN_7EPjM6j9HUI}"
+          printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' "$url" "$key" > .env
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      # Keep the same signing key between runs so a new APK installs over the
+      # previous one instead of failing with "App not installed".
+      - name: Restore signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: unicon-debug-keystore-v1
+
+      - name: Build APK
+        run: flutter build apk --release --build-number=${{ github.run_number }}
+
+      - name: Name the APK
+        run: |
+          short_sha="$(git rev-parse --short HEAD)"
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/unicon-${{ github.run_number }}-${short_sha}.apk"
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unicon-apk
+          path: dist/*.apk
+          retention-days: 30
+
+      # A Release gives a direct download link that works from a phone
+      # browser (artifacts download as a zip).
+      - name: Publish release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: UNICON build ${{ github.run_number }} (${{ github.ref_name }})
+          prerelease: true
+          files: dist/*.apk
+          body: |
+            Built from `${{ github.sha }}` on `${{ github.ref_name }}`.
+            Download the `.apk` below on your Android phone and open it. You may need to allow installs from your browser.
