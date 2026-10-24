@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/utils/app_logger.dart';
+import '../utils/password_rules.dart';
 
 enum AuthStatus { idle, loading, error }
 
@@ -14,9 +15,9 @@ String friendlyAuthError(Object e) {
   if (msg.contains('already registered')) {
     return 'That email is already registered. Try logging in.';
   }
-  if (msg.contains('Password should be')) {
-    return 'Password must be at least 6 characters.';
-  }
+  // Supabase: "Password should be at least 8 characters" or
+  // "Password should contain at least one character of each: ...".
+  if (msg.contains('Password should')) return kPasswordRuleText;
   // handle_new_user() fails on the unique username constraint.
   if (msg.contains('Database error saving new user')) {
     return 'That username is taken. Try another one.';
