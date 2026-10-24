@@ -77,11 +77,17 @@ Every insert/select/update/delete policy across posts, comments, messages, follo
 
 <!-- Add screenshots here: Home feed, Post detail, Chat, Profile, Discover -->
 
+## Download the app
+
+Every push builds a release APK on GitHub Actions (`.github/workflows/android.yml`), after `flutter analyze` and the tests pass. Open [Releases](https://github.com/Bennykent21/unicon-campus-app/releases) on an Android phone, pick the newest `UNICON build N`, download the `.apk` and open it. Builds are signed with the same key each time, so a new one installs over the old one.
+
+The build reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from repository secrets when they are set (Settings → Secrets and variables → Actions); otherwise it uses this project's public client key.
+
 ## Setup
 
 1. `flutter pub get`
 2. Copy `.env.example` → `.env`, add your Supabase URL + anon key
-3. Run migrations in `supabase/` sequentially in the Supabase SQL editor, ending with `migration_022_announcements.sql`, `migration_023_internships.sql` and `migration_024_internship_seed.sql` (the starting internship listings)
+3. Run migrations in `supabase/` sequentially in the Supabase SQL editor, ending with `migration_022_announcements.sql`, `migration_023_internships.sql`, `migration_024_internship_seed.sql` (the starting internship listings) and `migration_025_hardening.sql` (server-side reputation, accepted answers, tighter RLS and indexes)
 4. Create `avatars`, `post-images`, and `chat-images` storage buckets (public)
 5. `flutter run`
 6. `flutter test` runs the unit and widget tests
