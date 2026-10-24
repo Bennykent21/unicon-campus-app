@@ -59,10 +59,6 @@ class CommentNotifier extends StateNotifier<AsyncValue<void>> {
         'author_id': userId,
         'body': body.trim(),
       });
-      await SupabaseService.client.rpc('award_reputation', params: {
-        'target_post_id': postId,
-        'action': 'comment',
-      });
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -78,24 +74,11 @@ class CommentNotifier extends StateNotifier<AsyncValue<void>> {
     required String postId,
     required bool currentlyAccepted,
   }) async {
-    if (currentlyAccepted) {
-      await SupabaseService.client
-          .from('comments')
-          .update({'is_accepted_answer': false}).eq('id', commentId);
-      return;
-    }
-
-    // Unmark any previously accepted answer first, then mark this one.
-    await SupabaseService.client
-        .from('comments')
-        .update({'is_accepted_answer': false}).eq('post_id', postId);
-    await SupabaseService.client
-        .from('comments')
-        .update({'is_accepted_answer': true}).eq('id', commentId);
-
-    await SupabaseService.client.rpc('award_reputation', params: {
-      'target_post_id': postId,
-      'action': 'accepted_answer',
+    // The database checks that the caller wrote the post, clears any
+    // other accepted answer and awards reputation (migration_025).
+    await SupabaseService.client.rpc('set_accepted_answer', params: {
+      '_comment_id': commentId,
+      '_accepted': !currentlyAccepted,
     });
   }
 }
@@ -119,13 +102,10 @@ class HelpfulToggleNotifier extends StateNotifier<void> {
           .delete()
           .match({'post_id': postId, 'user_id': userId});
     } else {
+      // Reputation is awarded by a database trigger (migration_025).
       await client
           .from('post_helpful')
           .insert({'post_id': postId, 'user_id': userId});
-      await client.rpc('award_reputation', params: {
-        'target_post_id': postId,
-        'action': 'helpful',
-      });
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/models/post_model.dart';
 import '../../home/widgets/post_card.dart';
 import '../../home/providers/home_provider.dart';
@@ -151,7 +152,7 @@ class _FilteredPostsList extends ConsumerWidget {
       onRefresh: () async => ref.invalidate(myPostsProvider),
       child: myPostsAsync.when(
         loading: () => _shimmer(theme),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => ErrorState(error: e, action: 'load your posts'),
         data: (allPosts) {
           final posts = typeFilter == null
               ? allPosts
@@ -194,7 +195,7 @@ class _SavedPostsList extends ConsumerWidget {
       onRefresh: () async => ref.invalidate(mySavedPostsProvider),
       child: savedAsync.when(
         loading: () => _shimmer(theme),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => ErrorState(error: e, action: 'load your posts'),
         data: (posts) {
           if (posts.isEmpty) {
             return Center(

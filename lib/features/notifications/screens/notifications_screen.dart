@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/time_formatter.dart';
+import '../../../core/widgets/state_views.dart';
 
 class NotificationModel {
   final String id;
@@ -92,8 +93,9 @@ class NotificationsScreen extends ConsumerWidget {
                   .update({'is_read': true}).eq('recipient_id', userId);
               ref.invalidate(notificationsProvider);
             },
-            child: const Text('Mark all read',
-                style: TextStyle(color: AppColors.primary, fontSize: 13)),
+            child: Text('Mark all read',
+                style:
+                    TextStyle(color: context.palette.brandText, fontSize: 13)),
           ),
         ],
       ),
@@ -101,28 +103,21 @@ class NotificationsScreen extends ConsumerWidget {
         onRefresh: () async => ref.invalidate(notificationsProvider),
         child: notifs.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => ErrorState(
+              error: e,
+              action: 'load notifications',
+              onRetry: () => ref.invalidate(notificationsProvider)),
           data: (items) {
             if (items.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.notifications_none,
-                        size: 48,
-                        color: AppColors.primary.withValues(alpha: 0.3)),
-                    const SizedBox(height: 12),
-                    Text('No notifications yet',
-                        style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    Text(
-                        'When people interact with your posts,\nyou\'ll see it here.',
-                        textAlign: TextAlign.center,
-                        style:
-                            theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
-                  ],
+              // ListView so pull-to-refresh still works on an empty list.
+              return ListView(children: const [
+                SizedBox(height: 80),
+                EmptyState(
+                  icon: Icons.notifications_none,
+                  message:
+                      'When people comment on, mark helpful or follow you, it shows up here.',
                 ),
-              );
+              ]);
             }
             return ListView.separated(
               itemCount: items.length,
@@ -180,7 +175,7 @@ class NotificationsScreen extends ConsumerWidget {
                               Text(
                                 compactTime(n.createdAt),
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   color: color,
                                 ),
                               ),

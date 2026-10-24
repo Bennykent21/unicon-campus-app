@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/providers/home_provider.dart';
 import '../models/profile_model.dart';
 import '../providers/follow_list_provider.dart';
@@ -33,7 +34,7 @@ class FollowListScreen extends ConsumerWidget {
       ),
       body: listAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => ErrorState(error: e, action: 'load this list'),
         data: (users) {
           if (users.isEmpty) {
             return Center(
@@ -71,13 +72,14 @@ class _UserRow extends ConsumerWidget {
       onTap: () => context.push('/user/${user.id}'),
       leading: CircleAvatar(
         radius: 22,
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: context.palette.brandSoft,
         backgroundImage:
             user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
         child: user.avatarUrl == null
             ? Text(user.fullName.isNotEmpty ? user.fullName[0] : '?',
-                style: const TextStyle(
-                    color: AppColors.primary, fontWeight: FontWeight.bold))
+                style: TextStyle(
+                    color: context.palette.brandText,
+                    fontWeight: FontWeight.bold))
             : null,
       ),
       title: Text(user.fullName,
@@ -129,7 +131,7 @@ class _FollowChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: isFollowing ? AppColors.primary : Colors.white,
+              color: isFollowing ? context.palette.brandText : Colors.white,
             ),
           ),
         ),

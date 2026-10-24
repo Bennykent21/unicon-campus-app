@@ -21,7 +21,8 @@ Most student projects are CRUD demos. This one required solving real production-
 - **Home Feed** — infinite-scroll feed supporting 6 post types (general, question, marketplace, job, event, announcement), tag/type filtering, full-text search, trending topics
 - **Engagement** — helpful votes, saves, comments with accepted-answer marking (Q&A style), reputation scoring via Postgres functions
 - **Profile** — editable profile with avatar upload, followers/following, activity history, dark mode (persisted)
-- **Discover** — category browsing for Marketplace, Jobs, Events, Scholarships
+- **Discover** — category browsing for Marketplace, Jobs, Events, Announcements, Scholarships
+- **Internship board** — SIWES placements, internships, graduate trainee schemes and remote programmes open to UNIBEN students, matched to each student's department and level. Each listing shows eligibility, documents to send, step-by-step application instructions, contacts and its source. Students draft their application email or SIWES letter from their profile in one tap, see which UNIBEN students trained at a company, and track each application from saved to offer (private to them through RLS)
 - **Chat** — real-time 1:1 messaging with image attachments, message deletion, read-state tracking
 - **Notifications** — event-driven via Postgres triggers (comment, helpful, follow, accepted-answer)
 
@@ -76,19 +77,33 @@ Every insert/select/update/delete policy across posts, comments, messages, follo
 
 <!-- Add screenshots here: Home feed, Post detail, Chat, Profile, Discover -->
 
+## Download the app
+
+Every push builds a release APK on GitHub Actions (`.github/workflows/android.yml`), after `flutter analyze` and the tests pass. Open [Releases](https://github.com/Bennykent21/unicon-campus-app/releases) on an Android phone, pick the newest `UNICON build N`, download the `.apk` and open it. Builds are signed with the same key each time, so a new one installs over the old one.
+
+The build reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from repository secrets when they are set (Settings → Secrets and variables → Actions); otherwise it uses this project's public client key.
+
+Each release has two files: `-arm64.apk` is smaller and fits almost every phone; the other works on all of them. The app id is `com.bennykent.unicon`, so a build from before that change installs as a separate app: uninstall the old one.
+
+To sign with your own release key (needed for the Play Store), add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets. Locally, put the same values in `android/key.properties` (gitignored). Changing the key means uninstalling builds signed with the old one.
+
 ## Setup
 
 1. `flutter pub get`
 2. Copy `.env.example` → `.env`, add your Supabase URL + anon key
-3. Run migrations in `supabase/` sequentially in the Supabase SQL editor
+3. Run migrations in `supabase/` sequentially in the Supabase SQL editor, ending with `migration_022_announcements.sql`, `migration_023_internships.sql`, `migration_024_internship_seed.sql` (the starting internship listings) and `migration_025_hardening.sql` (server-side reputation, accepted answers, tighter RLS and indexes)
 4. Create `avatars`, `post-images`, and `chat-images` storage buckets (public)
 5. `flutter run`
+6. `flutter test` runs the unit and widget tests
+
+To let someone add or edit internship listings, insert their user id into the `curators` table from the Supabase dashboard. The app never writes to that table.
 
 ## Known limitations / roadmap
 
 - Group chats and channels (DMs are fully implemented; groups are schema-ready but UI not yet built)
 - Message reactions and reply-threading
-- Internship application tracking (in progress — extending the Jobs category into a full application flow)
+- An in-app screen for curators to add listings (today they are added in the Supabase dashboard)
+- Older migrations need consolidating: `migration_009` references a function that only exists in the original project, and `migration_017_enable_realtime` re-adds a table that `schema.sql` already published, so both fail on a brand-new project
 - Block/mute users
 
 ## About

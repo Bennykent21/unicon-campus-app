@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/department_field.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -116,13 +117,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         children: [
                           CircleAvatar(
                             radius: 48,
-                            backgroundColor: AppColors.primaryLight,
+                            backgroundColor: context.palette.brandSoft,
                             backgroundImage: _avatarFile != null
                                 ? FileImage(_avatarFile!)
                                 : null,
                             child: _avatarFile == null
-                                ? const Icon(Icons.person,
-                                    size: 40, color: AppColors.primary)
+                                ? Icon(Icons.person,
+                                    size: 40, color: context.palette.brandText)
                                 : null,
                           ),
                           Positioned(
@@ -146,8 +147,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   Center(
                     child: TextButton(
                       onPressed: _pickAvatar,
-                      child: const Text('Upload photo',
-                          style: TextStyle(color: AppColors.primary)),
+                      child: Text('Upload photo',
+                          style: TextStyle(color: context.palette.brandText)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -195,15 +196,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     textCapitalization: TextCapitalization.words,
                   ),
                   const SizedBox(height: 14),
-                  TextFormField(
-                    controller:
-                        _departmentCtrl, // uses controller, no initialValue needed
-                    decoration: const InputDecoration(
-                      labelText: 'Department',
-                      hintText: 'e.g. CPE, CSE, EEE',
-                    ),
-                    textCapitalization: TextCapitalization.characters,
-                  ),
+                  DepartmentField(controller: _departmentCtrl),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedLevel,

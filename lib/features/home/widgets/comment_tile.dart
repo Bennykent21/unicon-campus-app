@@ -35,7 +35,7 @@ class CommentTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 15,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.palette.brandSoft,
                 backgroundImage: comment.authorAvatarUrl != null
                     ? NetworkImage(comment.authorAvatarUrl!)
                     : null,
@@ -44,8 +44,8 @@ class CommentTile extends StatelessWidget {
                         comment.authorName.isNotEmpty
                             ? comment.authorName[0]
                             : '?',
-                        style: const TextStyle(
-                            color: AppColors.primary,
+                        style: TextStyle(
+                            color: context.palette.brandText,
                             fontWeight: FontWeight.bold,
                             fontSize: 12))
                     : null,
@@ -65,11 +65,11 @@ class CommentTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text('·',
                           style: theme.textTheme.bodySmall
-                              ?.copyWith(fontSize: 11)),
+                              ?.copyWith(fontSize: 12)),
                       const SizedBox(width: 6),
                       Text(compactTime(comment.createdAt),
                           style: theme.textTheme.bodySmall
-                              ?.copyWith(fontSize: 11)),
+                              ?.copyWith(fontSize: 12)),
                       const Spacer(),
                       // Accepted badge — tappable by the post author to UNMARK it.
                       // Non-authors just see it as a static badge.
@@ -94,7 +94,7 @@ class CommentTile extends StatelessWidget {
                               Text(isPostAuthor ? 'Accepted ✕' : 'Accepted',
                                   style: const TextStyle(
                                       color: AppColors.helpful,
-                                      fontSize: 11,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700)),
                             ]),
                           ),
@@ -104,16 +104,16 @@ class CommentTile extends StatelessWidget {
                           onTap: onToggleAccepted,
                           child: Text('Mark accepted',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   color: AppColors.helpful,
                                   fontWeight: FontWeight.w600)),
                         ),
                     ]),
                     if (comment.authorLevel.isNotEmpty)
                       Text(comment.authorLevel,
-                          style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primary,
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              color: context.palette.brandText,
                               fontWeight: FontWeight.w600)),
                   ],
                 ),

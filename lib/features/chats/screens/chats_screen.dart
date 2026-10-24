@@ -4,8 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_views.dart';
 import '../models/chat_model.dart';
 import '../providers/chats_provider.dart';
+
+/// Text typed in the chats search box; filters conversations by name or
+/// last message.
+final _chatSearchProvider = StateProvider.autoDispose<String>((ref) => '');
 
 class ChatsScreen extends ConsumerWidget {
   const ChatsScreen({super.key});
@@ -13,6 +18,7 @@ class ChatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeFilter = ref.watch(chatsTabFilterProvider);
+    final query = ref.watch(_chatSearchProvider).trim().toLowerCase();
     final chatsAsync = ref.watch(chatsProvider);
 
     return Scaffold(
@@ -23,10 +29,12 @@ class ChatsScreen extends ConsumerWidget {
           // via the app-wide realtime channel (realtime_sync.dart) whenever a
           // new message arrives, plus a 30s polling fallback in the nav shell.
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(chatsProvider),
           ),
           IconButton(
+            tooltip: 'New message',
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push('/new-message'),
           ),
@@ -36,11 +44,14 @@ class ChatsScreen extends ConsumerWidget {
         onRefresh: () async => ref.invalidate(chatsProvider),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search chats, people, groups...',
+                onChanged: (v) =>
+                    ref.read(_chatSearchProvider.notifier).state = v,
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(
+                  hintText: 'Search conversations',
                   prefixIcon: Icon(Icons.search, size: 20),
                 ),
               ),
@@ -84,8 +95,13 @@ class ChatsScreen extends ConsumerWidget {
                     ChatsTabFilter.groups => ChatKind.group,
                     ChatsTabFilter.channels => ChatKind.channel,
                   };
-                  final filtered =
-                      chats.where((c) => c.kind == kindFilter).toList();
+                  final filtered = chats
+                      .where((c) => c.kind == kindFilter)
+                      .where((c) =>
+                          query.isEmpty ||
+                          c.title.toLowerCase().contains(query) ||
+                          c.lastMessage.toLowerCase().contains(query))
+                      .toList();
                   final pinned = filtered.where((c) => c.isPinned).toList();
                   final rest = filtered.where((c) => !c.isPinned).toList();
 
@@ -93,9 +109,27 @@ class ChatsScreen extends ConsumerWidget {
                     return ListView(
                       // Wrapped in ListView so pull-to-refresh still works
                       // even when the list is empty.
-                      children: const [
-                        SizedBox(height: 120),
-                        Center(child: Text('No conversations yet')),
+                      children: [
+                        const SizedBox(height: 80),
+                        if (query.isNotEmpty)
+                          EmptyState(
+                            icon: Icons.search_off,
+                            message: 'No conversations match "$query".',
+                          )
+                        else if (activeFilter != ChatsTabFilter.dms)
+                          const EmptyState(
+                            icon: Icons.groups_outlined,
+                            message:
+                                'Group chats and channels are coming in a future update.',
+                          )
+                        else
+                          EmptyState(
+                            icon: Icons.chat_bubble_outline,
+                            message:
+                                'No conversations yet. Message a classmate to get started.',
+                            actionLabel: 'New message',
+                            onAction: () => context.push('/new-message'),
+                          ),
                       ],
                     );
                   }
@@ -115,8 +149,10 @@ class ChatsScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) =>
-                    Center(child: Text('Couldn\'t load chats: $e')),
+                error: (e, _) => ErrorState(
+                    error: e,
+                    action: 'load chats',
+                    onRetry: () => ref.invalidate(chatsProvider)),
               ),
             ),
           ],
@@ -136,10 +172,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.primary,
+          color: context.palette.brandText,
           letterSpacing: 0.3,
         ),
       ),
@@ -189,14 +225,15 @@ class _ChatTile extends StatelessWidget {
       onTap: () => context.push('/chat/${chat.id}'),
       leading: CircleAvatar(
         radius: 22,
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: context.palette.brandSoft,
         backgroundImage: chat.avatarUrl != null
             ? CachedNetworkImageProvider(chat.avatarUrl!)
             : null,
         child: chat.avatarUrl == null
             ? Text(chat.title.isNotEmpty ? chat.title[0] : '?',
-                style: const TextStyle(
-                    color: AppColors.primary, fontWeight: FontWeight.bold))
+                style: TextStyle(
+                    color: context.palette.brandText,
+                    fontWeight: FontWeight.bold))
             : null,
       ),
       title:
@@ -217,7 +254,7 @@ class _ChatTile extends StatelessWidget {
               child: Text('${chat.unreadCount}',
                   style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold)),
             ),
           ],

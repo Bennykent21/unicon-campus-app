@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/utils/money_formatter.dart';
+import '../../../core/utils/share_links.dart';
 import '../../../core/utils/time_formatter.dart';
+import '../../../core/widgets/post_type_badge.dart';
+import '../../../core/widgets/state_views.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import '../providers/post_detail_provider.dart';
@@ -66,25 +69,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete',
+                style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
           ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      await SupabaseService.client.from('posts').delete().eq('id', postId);
+      try {
+        await SupabaseService.client.from('posts').delete().eq('id', postId);
+      } catch (e, st) {
+        if (context.mounted) {
+          showErrorSnack(context, e,
+              action: 'delete this post', stackTrace: st);
+        }
+        return;
+      }
       ref.invalidate(feedPostsProvider);
-      if (context.mounted) context.pop();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Post deleted')));
+      context.pop();
     }
   }
 
-  void _sharePost(PostModel post) {
-    Clipboard.setData(ClipboardData(text: 'uniapp://post/${post.id}'));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Link copied!'), behavior: SnackBarBehavior.floating),
-    );
-  }
+  void _sharePost(PostModel post) =>
+      ShareLinks.copy(context, ShareLinks.post(post.id));
 
   List<CommentModel> _sorted(List<CommentModel> comments) {
     final list = List<CommentModel>.from(comments);
@@ -106,6 +116,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final followOverlay = ref.watch(followOverlayProvider);
     final currentUserId = SupabaseService.currentUserId;
     final theme = Theme.of(context);
+    final palette = context.palette;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -117,18 +128,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 final isMyPost = post.authorId == currentUserId;
                 return Row(mainAxisSize: MainAxisSize.min, children: [
                   IconButton(
+                    tooltip: 'Copy link',
                     icon: const Icon(Icons.ios_share_outlined, size: 20),
                     onPressed: () => _sharePost(post),
                   ),
                   PopupMenuButton<String>(
+                    tooltip: 'More options',
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     itemBuilder: (_) => [
                       if (isMyPost)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                             value: 'delete',
                             child: _MenuItem(Icons.delete_outline,
-                                'Delete post', Colors.red)),
+                                'Delete post', theme.colorScheme.error)),
                       if (!isMyPost)
                         const PopupMenuItem(
                             value: 'report',
@@ -157,9 +170,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ),
       body: postAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => ErrorState(
+          error: e,
+          action: 'load this post',
+          onRetry: () => ref.invalidate(postDetailProvider(widget.postId)),
+        ),
         data: (post) {
-          if (post == null) return const Center(child: Text('Post not found'));
+          if (post == null) {
+            return EmptyState(
+              icon: Icons.article_outlined,
+              message: 'This post was deleted or is no longer available.',
+              actionLabel: 'Back to feed',
+              onAction: () =>
+                  context.canPop() ? context.pop() : context.go('/home'),
+            );
+          }
           final isMyPost = post.authorId == currentUserId;
           final isFollowing = followOverlay.containsKey(post.authorId)
               ? followOverlay[post.authorId]!
@@ -176,25 +201,31 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          GestureDetector(
-                            onTap: !isMyPost
-                                ? () => context.push('/user/${post.authorId}')
-                                : null,
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColors.primaryLight,
-                              backgroundImage: post.authorAvatarUrl != null
-                                  ? NetworkImage(post.authorAvatarUrl!)
+                          Semantics(
+                            button: !isMyPost,
+                            label: "${post.authorName}'s profile",
+                            excludeSemantics: true,
+                            child: GestureDetector(
+                              onTap: !isMyPost
+                                  ? () => context.push('/user/${post.authorId}')
                                   : null,
-                              child: post.authorAvatarUrl == null
-                                  ? Text(
-                                      post.authorName.isNotEmpty
-                                          ? post.authorName[0]
-                                          : '?',
-                                      style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold))
-                                  : null,
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: palette.brandSoft,
+                                backgroundImage: post.authorAvatarUrl != null
+                                    ? CachedNetworkImageProvider(
+                                        post.authorAvatarUrl!)
+                                    : null,
+                                child: post.authorAvatarUrl == null
+                                    ? Text(
+                                        post.authorName.isNotEmpty
+                                            ? post.authorName[0]
+                                            : '?',
+                                        style: TextStyle(
+                                            color: palette.brandText,
+                                            fontWeight: FontWeight.bold))
+                                    : null,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -222,17 +253,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ]),
                                 Row(children: [
                                   if (post.authorLevel.isNotEmpty) ...[
-                                    Text(post.authorLevel,
-                                        style: const TextStyle(
-                                            color: AppColors.primary,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600)),
-                                    const Text('  ·  ',
-                                        style: TextStyle(fontSize: 11)),
+                                    Flexible(
+                                      child: Text(post.authorLevel,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                  color: palette.brandText,
+                                                  fontWeight: FontWeight.w600)),
+                                    ),
+                                    Text('  ·  ',
+                                        style: theme.textTheme.bodySmall),
                                   ],
                                   Text(compactTime(post.createdAt),
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(fontSize: 11)),
+                                      style: theme.textTheme.bodySmall),
                                 ]),
                               ],
                             ),
@@ -255,7 +288,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _TypeBadge(type: post.type),
+                          PostTypeBadge(type: post.type, short: false),
                           const SizedBox(height: 10),
                           Text(post.title,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -269,9 +302,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           if (post.type == 'marketplace' &&
                               post.price != null) ...[
                             const SizedBox(height: 12),
-                            Text('₦${post.price!.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                    color: AppColors.marketplace,
+                            Text(formatNaira(post.price!),
+                                style: TextStyle(
+                                    color: palette.marketplace.fg,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 24)),
                           ],
@@ -306,11 +339,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           if (post.tags.isNotEmpty) ...[
                             const SizedBox(height: 10),
                             Wrap(
-                                spacing: 6,
+                                spacing: 8,
                                 children: post.tags
                                     .map((t) => Text('#$t',
-                                        style: const TextStyle(
-                                            color: AppColors.primary,
+                                        style: TextStyle(
+                                            color: palette.brandText,
                                             fontWeight: FontWeight.w600)))
                                     .toList()),
                           ],
@@ -335,7 +368,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           Icon(Icons.thumb_up,
                               size: 14,
                               color: post.isHelpfulByMe
-                                  ? AppColors.helpful
+                                  ? palette.marketplace.fg
                                   : theme.textTheme.bodySmall?.color),
                           const SizedBox(width: 4),
                           Text('${post.helpfulCount} Helpful',
@@ -354,14 +387,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           const SizedBox(width: 14),
                         ],
                         if (post.isSavedByMe) ...[
-                          const Icon(Icons.bookmark,
-                              size: 14, color: AppColors.primary),
+                          Icon(Icons.bookmark,
+                              size: 14, color: palette.brandText),
                           const SizedBox(width: 4),
                           Text('Saved',
                               style: theme.textTheme.bodySmall?.copyWith(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.primary)),
+                                  color: palette.brandText)),
                         ],
                       ]),
                     ),
@@ -373,7 +406,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ? Icons.thumb_up
                             : Icons.thumb_up_alt_outlined,
                         label: 'Helpful',
-                        color: post.isHelpfulByMe ? AppColors.helpful : null,
+                        color:
+                            post.isHelpfulByMe ? palette.marketplace.fg : null,
                         onTap: () => ref
                             .read(helpfulToggleProvider.notifier)
                             .toggle(post.id, post.isHelpfulByMe)
@@ -394,7 +428,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ? Icons.bookmark
                             : Icons.bookmark_border,
                         label: 'Save',
-                        color: post.isSavedByMe ? AppColors.primary : null,
+                        color: post.isSavedByMe ? palette.brandText : null,
                         onTap: () => ref
                             .read(saveToggleProvider.notifier)
                             .toggle(post.id, post.isSavedByMe)
@@ -405,7 +439,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       Expanded(
                           child: _EngageBtn(
                         icon: Icons.ios_share_outlined,
-                        label: 'Share',
+                        label: 'Copy link',
                         onTap: () => _sharePost(post),
                       )),
                     ]),
@@ -419,6 +453,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ?.copyWith(fontWeight: FontWeight.w800)),
                         const Spacer(),
                         PopupMenuButton<CommentSort>(
+                          tooltip: 'Sort comments',
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                           onSelected: (s) => setState(() => _sort = s),
@@ -432,7 +467,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                               ? FontWeight.w700
                                               : FontWeight.normal,
                                       color: _sort == CommentSort.mostRecent
-                                          ? AppColors.primary
+                                          ? palette.brandText
                                           : null)),
                             ),
                             PopupMenuItem(
@@ -444,23 +479,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                               ? FontWeight.w700
                                               : FontWeight.normal,
                                       color: _sort == CommentSort.mostHelpful
-                                          ? AppColors.primary
+                                          ? palette.brandText
                                           : null)),
                             ),
                           ],
-                          child: Row(children: [
-                            Text(
-                              _sort == CommentSort.mostRecent
-                                  ? 'Most recent'
-                                  : 'Most helpful',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12),
-                            ),
-                            const Icon(Icons.keyboard_arrow_down,
-                                size: 16, color: AppColors.primary),
-                          ]),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 44),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Text(
+                                _sort == CommentSort.mostRecent
+                                    ? 'Most recent'
+                                    : 'Most helpful',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: palette.brandText,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13),
+                              ),
+                              Icon(Icons.keyboard_arrow_down,
+                                  size: 18, color: palette.brandText),
+                            ]),
+                          ),
                         ),
                       ]),
                     ),
@@ -469,17 +508,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         padding: EdgeInsets.all(24),
                         child: Center(child: CircularProgressIndicator()),
                       ),
-                      error: (e, _) => Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text('Could not load comments: $e'),
+                      error: (e, _) => ErrorState(
+                        error: e,
+                        action: 'load comments',
+                        onRetry: () =>
+                            ref.invalidate(commentsProvider(widget.postId)),
                       ),
                       data: (comments) {
                         if (comments.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 32),
                             child: Center(
-                              child: Text('No comments yet — be the first!',
-                                  style: theme.textTheme.bodySmall),
+                              child: Text(
+                                  'No comments yet. Start the discussion below.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant)),
                             ),
                           );
                         }
@@ -551,8 +595,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2))
                       : IconButton(
-                          icon: const Icon(Icons.send_rounded,
-                              color: AppColors.primary),
+                          tooltip: 'Send comment',
+                          icon: Icon(Icons.send_rounded,
+                              color: palette.brandText),
                           onPressed: () => _submitComment(post),
                         ),
                 ]),
@@ -589,7 +634,7 @@ class _EngageBtn extends StatelessWidget {
             const SizedBox(height: 3),
             Text(label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+                    fontSize: 12, fontWeight: FontWeight.w600, color: color)),
           ]),
         ),
       );
@@ -601,56 +646,46 @@ class _FollowButton extends StatelessWidget {
   const _FollowButton({required this.isFollowing, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: isFollowing ? Colors.transparent : AppColors.primary,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-                color: isFollowing ? AppColors.primary : Colors.transparent),
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            if (isFollowing) ...[
-              const Icon(Icons.check, size: 13, color: AppColors.primary),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              isFollowing ? 'Following' : 'Follow',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isFollowing ? AppColors.primary : Colors.white,
-              ),
-            ),
-          ]),
-        ),
-      );
-}
-
-class _TypeBadge extends StatelessWidget {
-  final String type;
-  const _TypeBadge({required this.type});
-
-  @override
   Widget build(BuildContext context) {
-    final (color: c, label: l) = switch (type) {
-      'question' => (color: AppColors.question, label: 'Q&A'),
-      'marketplace' => (color: AppColors.marketplace, label: 'MARKETPLACE'),
-      'job' => (color: AppColors.job, label: 'JOB'),
-      'event' => (color: AppColors.event, label: 'EVENT'),
-      _ => (color: AppColors.general, label: 'GENERAL'),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-          color: c.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8)),
-      child: Text(l,
-          style:
-              TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w700)),
+    final brand = context.palette.brandText;
+    return Semantics(
+      button: true,
+      label: isFollowing ? 'Following. Tap to unfollow' : 'Follow',
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Center(
+            widthFactor: 1,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isFollowing ? Colors.transparent : AppColors.primary,
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: isFollowing ? brand : Colors.transparent),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (isFollowing) ...[
+                  Icon(Icons.check, size: 14, color: brand),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  isFollowing ? 'Following' : 'Follow',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isFollowing ? brand : Colors.white,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -664,11 +699,13 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Row(children: [
-          Icon(icon, size: 14, color: AppColors.primary),
+          Icon(icon, size: 16, color: context.palette.brandText),
           const SizedBox(width: 6),
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Flexible(
+            child: Text(label,
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          ),
         ]),
       );
 }
@@ -710,8 +747,8 @@ class _SingleImage extends StatelessWidget {
               imageUrl: url,
               width: double.infinity,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(
-                  height: 200, color: Colors.grey.withValues(alpha: 0.2)),
+              placeholder: (_, __) =>
+                  Container(height: 200, color: context.palette.shimmerBase),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),
             ),
           ),

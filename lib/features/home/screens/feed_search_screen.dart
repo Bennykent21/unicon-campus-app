@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_views.dart';
 import '../providers/home_provider.dart';
 import '../models/post_model.dart';
 import '../widgets/post_card.dart';
@@ -111,7 +112,7 @@ class _FeedSearchScreenState extends ConsumerState<FeedSearchScreen> {
           // ── Search results ────────────────────────────────────────────
           : results.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => ErrorState(error: e, action: 'search'),
               data: (posts) {
                 if (posts.isEmpty) {
                   return Center(
@@ -231,11 +232,11 @@ class _TrendingExplore extends StatelessWidget {
                           style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: 15,
-                              color: AppColors.primary)),
+                              color: context.palette.brandText)),
                       const SizedBox(height: 2),
                       Text('Trending in your university',
                           style: theme.textTheme.bodySmall
-                              ?.copyWith(fontSize: 11)),
+                              ?.copyWith(fontSize: 12)),
                     ],
                   ),
                 ),
@@ -272,8 +273,8 @@ class _TrendingExplore extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text('#$tag',
-                              style: const TextStyle(
-                                  color: AppColors.primary,
+                              style: TextStyle(
+                                  color: context.palette.brandText,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600)),
                         ),
