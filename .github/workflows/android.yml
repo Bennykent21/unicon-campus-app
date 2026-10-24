@@ -4,7 +4,14 @@ on:
   push:
     branches: [main, "claude/**"]
   pull_request:
+  # Run by hand from the Actions tab. With a version (e.g. 1.0.0) it
+  # publishes an official release tagged v<version> instead of a test build.
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version for an official release, e.g. 1.0.0 (leave empty for a test build)"
+        required: false
+        default: ""
 
 concurrency:
   group: android-${{ github.ref }}
@@ -18,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
+      VERSION: ${{ inputs.version }}
       HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
@@ -80,16 +88,24 @@ jobs:
 
       - name: Build APK
         run: |
-          flutter build apk --release --build-number=${{ github.run_number }}
+          # Official releases show their version in Android's app info;
+          # test builds keep the one in pubspec.yaml.
+          name_flag=""
+          if [ -n "$VERSION" ]; then name_flag="--build-name=$VERSION"; fi
+          flutter build apk --release $name_flag --build-number=${{ github.run_number }}
           # A smaller APK for 64-bit phones (almost every phone from 2017 on).
-          flutter build apk --release --split-per-abi --target-platform android-arm64 --build-number=${{ github.run_number }}
+          flutter build apk --release --split-per-abi --target-platform android-arm64 $name_flag --build-number=${{ github.run_number }}
 
       - name: Name the APK
         run: |
-          short_sha="$(git rev-parse --short HEAD)"
+          if [ -n "$VERSION" ]; then
+            label="v$VERSION"
+          else
+            label="${{ github.run_number }}-$(git rev-parse --short HEAD)"
+          fi
           mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-release.apk "dist/unicon-${{ github.run_number }}-${short_sha}.apk"
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "dist/unicon-${{ github.run_number }}-${short_sha}-arm64.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/unicon-${label}.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "dist/unicon-${label}-arm64.apk"
           ls -lh dist
 
       - uses: actions/upload-artifact@v4
@@ -100,8 +116,8 @@ jobs:
 
       # A Release gives a direct download link that works from a phone
       # browser (artifacts download as a zip).
-      - name: Publish release
-        if: github.event_name != 'pull_request'
+      - name: Publish test build
+        if: github.event_name != 'pull_request' && env.VERSION == ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
@@ -112,3 +128,18 @@ jobs:
             Built from `${{ github.sha }}` on `${{ github.ref_name }}`.
             Download the `.apk` below on your Android phone and open it. You may need to allow installs from your browser.
             The `-arm64` file is smaller and works on almost every phone; if it won't install, use the other one.
+
+      - name: Publish official release
+        if: env.VERSION != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: UNICON v${{ env.VERSION }}
+          prerelease: false
+          make_latest: "true"
+          files: dist/*.apk
+          body: |
+            UNICON, the campus community app for University of Benin students.
+            Built from `${{ github.sha }}` on `${{ github.ref_name }}`.
+
+            Download `unicon-v${{ env.VERSION }}-arm64.apk` on your Android phone and open it (it fits almost every phone). If it won't install, use `unicon-v${{ env.VERSION }}.apk`. You may need to allow installs from your browser.
