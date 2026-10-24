@@ -8,6 +8,8 @@ import '../../../core/widgets/state_views.dart';
 import '../providers/home_provider.dart';
 import '../widgets/post_card.dart';
 import '../widgets/filter_bottom_sheet.dart';
+import '../../internships/providers/internship_providers.dart';
+import '../../internships/widgets/opportunities_banner.dart';
 
 final _userDeptLevelProvider =
     FutureProvider.autoDispose<({String? dept, String? level})>((ref) async {
@@ -53,6 +55,7 @@ class HomeScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(unreadNotificationsProvider);
+          ref.invalidate(internshipsProvider);
           ref.read(engagementOverlayProvider.notifier).state = {};
           ref.read(followOverlayProvider.notifier).state = {};
           await ref.read(feedPostsProvider.notifier).refresh();
@@ -76,9 +79,22 @@ class HomeScreen extends ConsumerWidget {
                 pinned: false,
                 elevation: 0,
                 backgroundColor: theme.scaffoldBackgroundColor,
-                title: Text('Home',
-                    style: theme.appBarTheme.titleTextStyle
-                        ?.copyWith(fontSize: 20)),
+                titleSpacing: 16,
+                title: Semantics(
+                  header: true,
+                  label: 'UNICON home',
+                  excludeSemantics: true,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Image.asset('assets/images/unicon_mark.png',
+                        width: 30, height: 30),
+                    const SizedBox(width: 10),
+                    Text('UNICON',
+                        style: theme.appBarTheme.titleTextStyle?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8)),
+                  ]),
+                ),
                 actions: [
                   IconButton(
                     tooltip: 'Search',
@@ -265,6 +281,9 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+
+                    if (activeTab == FeedTab.forYou && !hasActiveFilters)
+                      const OpportunitiesBanner(),
 
                     // Thin divider before feed starts
                     Divider(height: 1, color: theme.dividerTheme.color),

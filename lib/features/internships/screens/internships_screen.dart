@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -36,6 +37,7 @@ class _InternshipsScreenState extends ConsumerState<InternshipsScreen> {
   }
 
   Future<void> _toggleSave(Internship i) async {
+    HapticFeedback.lightImpact();
     try {
       await ref.read(internshipActionsProvider).toggleSaved(i);
     } catch (e, st) {

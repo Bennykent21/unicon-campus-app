@@ -103,28 +103,21 @@ class NotificationsScreen extends ConsumerWidget {
         onRefresh: () async => ref.invalidate(notificationsProvider),
         child: notifs.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => ErrorState(error: e, action: 'load notifications'),
+          error: (e, _) => ErrorState(
+              error: e,
+              action: 'load notifications',
+              onRetry: () => ref.invalidate(notificationsProvider)),
           data: (items) {
             if (items.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.notifications_none,
-                        size: 48,
-                        color: AppColors.primary.withValues(alpha: 0.3)),
-                    const SizedBox(height: 12),
-                    Text('No notifications yet',
-                        style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    Text(
-                        'When people interact with your posts,\nyou\'ll see it here.',
-                        textAlign: TextAlign.center,
-                        style:
-                            theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
-                  ],
+              // ListView so pull-to-refresh still works on an empty list.
+              return ListView(children: const [
+                SizedBox(height: 80),
+                EmptyState(
+                  icon: Icons.notifications_none,
+                  message:
+                      'When people comment on, mark helpful or follow you, it shows up here.',
                 ),
-              );
+              ]);
             }
             return ListView.separated(
               itemCount: items.length,

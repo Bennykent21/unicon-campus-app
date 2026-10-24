@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the violet of the app icon. -->
+    <color name="splash_background">#2B0A93</color>
+</resources>

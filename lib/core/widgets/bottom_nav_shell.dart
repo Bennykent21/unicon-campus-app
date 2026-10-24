@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../supabase/realtime_sync.dart';
@@ -183,19 +184,37 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
           label: tab.badge > 0 ? '${tab.label}, $badgeText unread' : tab.label,
           excludeSemantics: true,
           child: InkWell(
-            onTap: () => context.go(tab.path),
+            onTap: () {
+              if (!selected) HapticFeedback.selectionClick();
+              context.go(tab.path);
+            },
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Icon(selected ? tab.activeIcon : tab.icon,
-                        size: 22, color: color),
+                    // Material 3 style indicator pill behind the active icon.
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      width: selected ? 56 : 40,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? palette.brandSoft
+                            : palette.brandSoft.withValues(alpha: 0),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Icon(selected ? tab.activeIcon : tab.icon,
+                          size: 22, color: color),
+                    ),
                     if (tab.badge > 0)
                       Positioned(
-                        right: -8,
-                        top: -5,
+                        right: 2,
+                        top: -4,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 4, vertical: 1),
@@ -217,7 +236,7 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
                       ),
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   tab.label,
                   style: TextStyle(

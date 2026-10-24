@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/department_field.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -195,15 +196,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     textCapitalization: TextCapitalization.words,
                   ),
                   const SizedBox(height: 14),
-                  TextFormField(
-                    controller:
-                        _departmentCtrl, // uses controller, no initialValue needed
-                    decoration: const InputDecoration(
-                      labelText: 'Department',
-                      hintText: 'e.g. CPE, CSE, EEE',
-                    ),
-                    textCapitalization: TextCapitalization.characters,
-                  ),
+                  DepartmentField(controller: _departmentCtrl),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedLevel,

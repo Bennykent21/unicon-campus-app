@@ -17,6 +17,16 @@ String friendlyAuthError(Object e) {
   if (msg.contains('Password should be')) {
     return 'Password must be at least 6 characters.';
   }
+  // handle_new_user() fails on the unique username constraint.
+  if (msg.contains('Database error saving new user')) {
+    return 'That username is taken. Try another one.';
+  }
+  if (msg.contains('Email not confirmed')) {
+    return 'Confirm your email first. Check your inbox for the link.';
+  }
+  if (msg.contains('SocketException') || msg.contains('Failed host lookup')) {
+    return 'No internet connection. Check your data or Wi-Fi.';
+  }
   return 'Something went wrong. Please try again.';
 }
 
@@ -32,12 +42,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signIn({required String email, required String password}) async {
     state = const AuthState(status: AuthStatus.loading);
     try {
-      await SupabaseService.client.auth.signInWithPassword(email: email, password: password);
+      await SupabaseService.client.auth
+          .signInWithPassword(email: email, password: password);
       state = const AuthState(status: AuthStatus.idle);
       return true;
     } catch (e, st) {
       AppLogger.error('signIn failed', name: 'auth', error: e, stackTrace: st);
-      state = AuthState(status: AuthStatus.error, errorMessage: friendlyAuthError(e));
+      state = AuthState(
+          status: AuthStatus.error, errorMessage: friendlyAuthError(e));
       return false;
     }
   }
@@ -68,10 +80,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e, st) {
       AppLogger.error('signUp failed', name: 'auth', error: e, stackTrace: st);
-      state = AuthState(status: AuthStatus.error, errorMessage: friendlyAuthError(e));
+      state = AuthState(
+          status: AuthStatus.error, errorMessage: friendlyAuthError(e));
       return false;
     }
   }
 }
 
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());

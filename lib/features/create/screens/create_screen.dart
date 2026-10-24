@@ -7,131 +7,97 @@ class CreateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final options = <_Option>[
+      _Option(Icons.help_outline, p.question, 'Ask a question',
+          'Get help from other students', 'question'),
+      _Option(Icons.edit_note, TagColors(p.brandText, p.brandSoft),
+          'Write a post', 'Share an update or start a discussion', 'general'),
+      _Option(Icons.sell_outlined, p.marketplace, 'Sell an item',
+          'List something for other students', 'marketplace'),
+      _Option(Icons.work_outline, p.job, 'Post a job or gig',
+          'Part-time work or a small project', 'job'),
+      _Option(Icons.event_outlined, p.event, 'Create an event',
+          'A meetup, talk or party', 'event'),
+      _Option(Icons.campaign_outlined, p.announcement, 'Share an announcement',
+          'Notices everyone should see', 'announcement'),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            icon: const Icon(Icons.close), onPressed: () => context.pop()),
-        title: const Text('What would you like to do?',
-            style: TextStyle(fontSize: 18)),
+            tooltip: 'Close',
+            icon: const Icon(Icons.close),
+            onPressed: () => context.pop()),
+        title: const Text('Create'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _CreateOption(
-            icon: Icons.edit_note,
-            color: AppColors.primary,
-            title: 'Create Post',
-            subtitle: 'Share an update or start a discussion',
-            onTap: () => context.push('/compose/general'),
-          ),
-          const SizedBox(height: 12),
-          _CreateOption(
-            icon: Icons.help_outline,
-            color: const Color(0xFF3B82F6),
-            title: 'Ask Question',
-            subtitle: 'Get help from the community',
-            onTap: () => context.push('/compose/question'),
-          ),
-          const SizedBox(height: 12),
-          _CreateOption(
-            icon: Icons.sell_outlined,
-            color: AppColors.marketplace,
-            title: 'List Item',
-            subtitle: 'Sell something to other students',
-            onTap: () => context.push('/compose/marketplace'),
-          ),
-          const SizedBox(height: 12),
-          _CreateOption(
-            icon: Icons.work_outline,
-            color: AppColors.job,
-            title: 'Post Job',
-            subtitle: 'Post a job or internship opportunity',
-            onTap: () => context.push('/compose/job'),
-          ),
-          const SizedBox(height: 12),
-          _CreateOption(
-            icon: Icons.event_outlined,
-            color: AppColors.event,
-            title: 'Create Event',
-            subtitle: 'Organize an event or meetup',
-            onTap: () => context.push('/compose/event'),
-          ),
-          const SizedBox(height: 12),
-          _CreateOption(
-            icon: Icons.campaign_outlined,
-            color: const Color(0xFFA855F7),
-            title: 'Share Announcement',
-            subtitle: 'Important info for students',
-            onTap: () => context.push('/compose/announcement'),
-          ),
-        ],
-      ),
+      body: LayoutBuilder(builder: (context, c) {
+        final columns = c.maxWidth > 560 ? 3 : 2;
+        return GridView.count(
+          crossAxisCount: columns,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          // Taller tiles when the student uses larger text, so nothing clips.
+          childAspectRatio:
+              0.98 / MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.8),
+          children: [
+            for (final o in options)
+              _OptionTile(
+                  option: o, onTap: () => context.push('/compose/${o.type}')),
+          ],
+        );
+      }),
     );
   }
 }
 
-class _CreateOption extends StatelessWidget {
+class _Option {
   final IconData icon;
-  final Color color;
+  final TagColors colors;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final String type;
+  const _Option(this.icon, this.colors, this.title, this.subtitle, this.type);
+}
 
-  const _CreateOption({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+class _OptionTile extends StatelessWidget {
+  final _Option option;
+  final VoidCallback onTap;
+  const _OptionTile({required this.option, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Material(
-      color: Theme.of(context).cardTheme.color,
-      borderRadius: BorderRadius.circular(16),
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: theme.dividerTheme.color!),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color:
-                    Theme.of(context).dividerTheme.color ?? Colors.transparent),
-          ),
-          child: Row(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: color),
+                    color: option.colors.bg,
+                    borderRadius: BorderRadius.circular(14)),
+                child: Icon(option.icon, color: option.colors.fg, size: 26),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 15)),
-                    const SizedBox(height: 2),
-                    Text(subtitle,
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.color
-                                ?.withValues(alpha: 0.7))),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, size: 20),
+              const Spacer(),
+              Text(option.title, style: theme.textTheme.titleSmall),
+              const SizedBox(height: 4),
+              Text(option.subtitle,
+                  style: theme.textTheme.bodySmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
             ],
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/share_links.dart';
@@ -40,6 +41,14 @@ class PostCard extends StatelessWidget {
     this.onFollow,
     this.onAvatarTap,
   });
+
+  /// Light tap feedback for the quick actions.
+  static VoidCallback? _withHaptic(VoidCallback? action) => action == null
+      ? null
+      : () {
+          HapticFeedback.lightImpact();
+          action();
+        };
 
   void _confirmDelete(BuildContext context) {
     showDialog(
@@ -365,7 +374,7 @@ class PostCard extends StatelessWidget {
                       ? 'Marked helpful, $hCount total. Tap to undo'
                       : 'Mark helpful, $hCount so far',
                   color: helpful ? palette.marketplace.fg : null,
-                  onTap: onHelpful,
+                  onTap: _withHaptic(onHelpful),
                 ),
                 _EngageBtn(
                   icon: Icons.mode_comment_outlined,
@@ -375,7 +384,7 @@ class PostCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: onSave,
+                  onPressed: _withHaptic(onSave),
                   tooltip: saved ? 'Remove from saved' : 'Save post',
                   icon: Icon(
                     saved ? Icons.bookmark : Icons.bookmark_border,

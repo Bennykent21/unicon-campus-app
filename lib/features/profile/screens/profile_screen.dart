@@ -116,6 +116,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     Divider(height: 1, color: theme.dividerTheme.color),
                     _ActivityRow(
+                      icon: Icons.checklist_rtl,
+                      label: 'My applications',
+                      subtitle: 'Internships you saved or applied to',
+                      onTap: () => context.push('/applications'),
+                    ),
+                    Divider(height: 1, color: theme.dividerTheme.color),
+                    _ActivityRow(
                       icon: Icons.people_outline,
                       label: 'Followers',
                       subtitle: '${profile.followerCount}',
@@ -170,12 +177,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       Divider(height: 1, color: theme.dividerTheme.color),
                       ListTile(
-                        leading: const Icon(Icons.logout,
-                            size: 20, color: Colors.red),
-                        title: const Text('Sign Out',
+                        leading: Icon(Icons.logout,
+                            size: 20, color: theme.colorScheme.error),
+                        title: Text('Sign Out',
                             style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: Colors.red)),
+                                color: theme.colorScheme.error)),
                         trailing: const Icon(Icons.chevron_right, size: 18),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
@@ -190,8 +197,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     child: const Text('Cancel')),
                                 TextButton(
                                     onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text('Sign out',
-                                        style: TextStyle(color: Colors.red))),
+                                    child: Text('Sign out',
+                                        style: TextStyle(
+                                            color: theme.colorScheme.error))),
                               ],
                             ),
                           );
@@ -415,7 +423,7 @@ class _ProfileHeader extends StatelessWidget {
                       ? '${(profile.reputation / 1000).toStringAsFixed(1)}k'
                       : '${profile.reputation}',
                   label: 'Reputation',
-                  valueColor: AppColors.primary,
+                  valueColor: context.palette.brandText,
                 ),
               ]),
               const SizedBox(height: 16),
