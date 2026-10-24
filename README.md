@@ -79,7 +79,9 @@ Every insert/select/update/delete policy across posts, comments, messages, follo
 
 ## Download the app
 
-Every push builds a release APK on GitHub Actions (`.github/workflows/android.yml`), after `flutter analyze` and the tests pass. Open [Releases](https://github.com/Bennykent21/unicon-campus-app/releases) on an Android phone, pick the newest `UNICON build N`, download the `.apk` and open it. Builds are signed with the same key each time, so a new one installs over the old one.
+**[Download the latest release](https://github.com/Bennykent21/unicon-campus-app/releases/latest)** on an Android phone, then open the `.apk`.
+
+Every push also builds a test APK on GitHub Actions (`.github/workflows/android.yml`) after `flutter analyze` and the tests pass, published as a pre-release named `UNICON build N`. To publish an official release, run the workflow from the Actions tab (Run workflow) with a version such as `1.0.0`: it is tagged `v1.0.0` and becomes the latest release. Builds are signed with the same key each time, so a new one installs over the old one.
 
 The build reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from repository secrets when they are set (Settings → Secrets and variables → Actions); otherwise it uses this project's public client key.
 
