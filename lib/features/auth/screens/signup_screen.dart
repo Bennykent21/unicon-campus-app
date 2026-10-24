@@ -7,6 +7,7 @@ import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/department_field.dart';
 import '../providers/auth_provider.dart';
+import '../utils/password_rules.dart';
 import '../widgets/auth_scaffold.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -158,7 +159,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     autofillHints: const [AutofillHints.newPassword],
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      helperText: 'At least 6 characters',
+                      helperText:
+                          'At least $kPasswordMinLength characters, with upper and lowercase letters, a number and a symbol',
+                      helperMaxLines: 2,
+                      errorMaxLines: 3,
                       prefixIcon: const Icon(Icons.lock_outline, size: 20),
                       suffixIcon: IconButton(
                         tooltip: _obscurePassword
@@ -175,8 +179,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) return 'Enter a password';
-                      if (v.length < 6) return 'At least 6 characters';
-                      return null;
+                      return passwordProblem(v);
                     },
                   ),
                   const SizedBox(height: 24),

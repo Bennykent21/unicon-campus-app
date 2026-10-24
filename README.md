@@ -91,7 +91,7 @@ To sign with your own release key (needed for the Play Store), add `ANDROID_KEYS
 
 1. `flutter pub get`
 2. Copy `.env.example` → `.env`, add your Supabase URL + anon key
-3. Run migrations in `supabase/` sequentially in the Supabase SQL editor, ending with `migration_022_announcements.sql`, `migration_023_internships.sql`, `migration_024_internship_seed.sql` (the starting internship listings) and `migration_025_hardening.sql` (server-side reputation, accepted answers, tighter RLS and indexes)
+3. Run migrations in `supabase/` sequentially in the Supabase SQL editor, ending with `migration_022_announcements.sql`, `migration_023_internships.sql`, `migration_024_internship_seed.sql` (the starting internship listings) and `migration_025_hardening.sql` (server-side reputation, accepted answers, tighter RLS and indexes), then `migration_026_function_grants.sql` (keeps internal functions out of the API)
 4. Create `avatars`, `post-images`, and `chat-images` storage buckets (public)
 5. `flutter run`
 6. `flutter test` runs the unit and widget tests
