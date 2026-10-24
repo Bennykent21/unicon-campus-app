@@ -130,7 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Text("Don't have an account?"),
                       TextButton(
                         onPressed: () => context.go('/signup'),
-                        child: const Text('Sign Up', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                        child: Text('Sign Up', style: TextStyle(color: context.palette.brandText, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),

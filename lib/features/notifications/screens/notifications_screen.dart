@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/time_formatter.dart';
+import '../../../core/widgets/state_views.dart';
 
 class NotificationModel {
   final String id;
@@ -92,8 +93,9 @@ class NotificationsScreen extends ConsumerWidget {
                   .update({'is_read': true}).eq('recipient_id', userId);
               ref.invalidate(notificationsProvider);
             },
-            child: const Text('Mark all read',
-                style: TextStyle(color: AppColors.primary, fontSize: 13)),
+            child: Text('Mark all read',
+                style:
+                    TextStyle(color: context.palette.brandText, fontSize: 13)),
           ),
         ],
       ),
@@ -101,7 +103,7 @@ class NotificationsScreen extends ConsumerWidget {
         onRefresh: () async => ref.invalidate(notificationsProvider),
         child: notifs.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => ErrorState(error: e, action: 'load notifications'),
           data: (items) {
             if (items.isEmpty) {
               return Center(
@@ -180,7 +182,7 @@ class NotificationsScreen extends ConsumerWidget {
                               Text(
                                 compactTime(n.createdAt),
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   color: color,
                                 ),
                               ),

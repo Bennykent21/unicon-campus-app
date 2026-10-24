@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_views.dart';
 import '../models/chat_model.dart';
 import '../providers/chats_provider.dart';
 
@@ -115,8 +116,7 @@ class ChatsScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) =>
-                    Center(child: Text('Couldn\'t load chats: $e')),
+                error: (e, _) => ErrorState(error: e, action: 'load chats'),
               ),
             ),
           ],
@@ -136,10 +136,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.primary,
+          color: context.palette.brandText,
           letterSpacing: 0.3,
         ),
       ),
@@ -189,14 +189,15 @@ class _ChatTile extends StatelessWidget {
       onTap: () => context.push('/chat/${chat.id}'),
       leading: CircleAvatar(
         radius: 22,
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: context.palette.brandSoft,
         backgroundImage: chat.avatarUrl != null
             ? CachedNetworkImageProvider(chat.avatarUrl!)
             : null,
         child: chat.avatarUrl == null
             ? Text(chat.title.isNotEmpty ? chat.title[0] : '?',
-                style: const TextStyle(
-                    color: AppColors.primary, fontWeight: FontWeight.bold))
+                style: TextStyle(
+                    color: context.palette.brandText,
+                    fontWeight: FontWeight.bold))
             : null,
       ),
       title:
@@ -217,7 +218,7 @@ class _ChatTile extends StatelessWidget {
               child: Text('${chat.unreadCount}',
                   style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold)),
             ),
           ],

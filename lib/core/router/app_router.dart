@@ -139,17 +139,9 @@ final appRouter = GoRouter(
       builder: (_, __) => const NewMessageScreen(),
     ),
     GoRoute(
-      path: '/discover-category',
-      builder: (_, state) {
-        final extra = state.extra as Map<String, dynamic>;
-        return DiscoverCategoryScreen(
-          title: extra['title'] as String,
-          icon: extra['icon'] as IconData,
-          color: extra['color'] as Color,
-          postType: extra['postType'] as String?,
-          tag: extra['tag'] as String?,
-        );
-      },
+      path: '/discover/:category',
+      builder: (_, state) => DiscoverCategoryScreen(
+          categoryKey: state.pathParameters['category']!),
     ),
 
     // Main shell — 4 tabs: Home(0) Chats(1) Discover(2) Profile(3)

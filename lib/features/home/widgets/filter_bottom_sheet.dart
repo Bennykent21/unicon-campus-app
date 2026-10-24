@@ -83,13 +83,13 @@ class _FilterSheetState extends State<_FilterSheet> {
                   TextButton(
                     onPressed: _clear,
                     child: Text('Clear all (${_selected.length})',
-                        style: const TextStyle(
-                            color: AppColors.primary, fontSize: 13)),
+                        style: TextStyle(
+                            color: context.palette.brandText, fontSize: 13)),
                   ),
               ]),
               const SizedBox(height: 4),
               Text('Select one or more to combine filters',
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
               const SizedBox(height: 8),
             ]),
           ),
@@ -108,6 +108,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                       'Marketplace',
                       'Job',
                       'Event',
+                      'Announcement',
                       'General'
                     ],
                     _selected,
@@ -226,10 +227,10 @@ class _Section extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 12,
-                color: AppColors.primary)),
+                color: context.palette.brandText)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,

@@ -73,7 +73,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
         'marketplace' => AppColors.marketplace,
         'job' => AppColors.job,
         'event' => AppColors.event,
-        'announcement' => const Color(0xFFA855F7),
+        'announcement' => AppColors.announcement,
         _ => AppColors.primary,
       };
 
@@ -110,7 +110,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final postId = await ref.read(createPostProvider.notifier).submit(
-          type: widget.postType == 'announcement' ? 'general' : widget.postType,
+          type: widget.postType,
           title: _titleController.text,
           body: _bodyController.text,
           tags: _parsedTags,
@@ -354,7 +354,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
               ),
               const SizedBox(height: 4),
               Text('Separate tags with commas or spaces',
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
 
               // ── Image picker — now available for EVERY post type ──
               const SizedBox(height: 16),

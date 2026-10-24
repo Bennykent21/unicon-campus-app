@@ -116,13 +116,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         children: [
                           CircleAvatar(
                             radius: 48,
-                            backgroundColor: AppColors.primaryLight,
+                            backgroundColor: context.palette.brandSoft,
                             backgroundImage: _avatarFile != null
                                 ? FileImage(_avatarFile!)
                                 : null,
                             child: _avatarFile == null
-                                ? const Icon(Icons.person,
-                                    size: 40, color: AppColors.primary)
+                                ? Icon(Icons.person,
+                                    size: 40, color: context.palette.brandText)
                                 : null,
                           ),
                           Positioned(
@@ -146,8 +146,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   Center(
                     child: TextButton(
                       onPressed: _pickAvatar,
-                      child: const Text('Upload photo',
-                          style: TextStyle(color: AppColors.primary)),
+                      child: Text('Upload photo',
+                          style: TextStyle(color: context.palette.brandText)),
                     ),
                   ),
                   const SizedBox(height: 20),

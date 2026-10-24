@@ -62,7 +62,7 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
   void _onScroll(ScrollNotification n) {
     if (n is ScrollUpdateNotification) {
       final delta = n.scrollDelta ?? 0;
-      if (delta > 4  && _navVisible)  setState(() => _navVisible = false);
+      if (delta > 4 && _navVisible) setState(() => _navVisible = false);
       if (delta < -4 && !_navVisible) setState(() => _navVisible = true);
     }
     if (n is ScrollEndNotification && n.metrics.pixels <= 0 && !_navVisible) {
@@ -80,15 +80,42 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
     final unreadChats = ref.watch(unreadChatsCountProvider);
 
     final tabs = [
-      (path: '/home',     icon: Icons.home_outlined,      activeIcon: Icons.home,        label: 'Home',    badge: 0),
-      (path: '/chats',    icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Chats',   badge: unreadChats),
-      (path: '/discover', icon: Icons.explore_outlined,    activeIcon: Icons.explore,     label: 'Discover',badge: 0),
-      (path: '/profile',  icon: Icons.person_outline,      activeIcon: Icons.person,      label: 'Profile', badge: 0),
+      (
+        path: '/home',
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        label: 'Home',
+        badge: 0
+      ),
+      (
+        path: '/chats',
+        icon: Icons.chat_bubble_outline,
+        activeIcon: Icons.chat_bubble,
+        label: 'Chats',
+        badge: unreadChats
+      ),
+      (
+        path: '/discover',
+        icon: Icons.explore_outlined,
+        activeIcon: Icons.explore,
+        label: 'Discover',
+        badge: 0
+      ),
+      (
+        path: '/profile',
+        icon: Icons.person_outline,
+        activeIcon: Icons.person,
+        label: 'Profile',
+        badge: 0
+      ),
     ];
 
     return Scaffold(
       body: NotificationListener<ScrollNotification>(
-        onNotification: (n) { _onScroll(n); return false; },
+        onNotification: (n) {
+          _onScroll(n);
+          return false;
+        },
         child: widget.child,
       ),
       floatingActionButton: AnimatedScale(
@@ -98,6 +125,7 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
         child: FloatingActionButton(
           onPressed: () => context.push('/create'),
           elevation: 2,
+          tooltip: 'Create',
           child: const Icon(Icons.add, size: 26),
         ),
       ),
@@ -110,7 +138,7 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
                 shape: const CircularNotchedRectangle(),
                 notchMargin: 6,
                 padding: EdgeInsets.zero,
-                height: 60,
+                height: 64,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -129,52 +157,77 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
 
   List<Widget> _buildTab(
     BuildContext context,
-    List<({String path, IconData icon, IconData activeIcon, String label, int badge})> tabs,
+    List<
+            ({
+              String path,
+              IconData icon,
+              IconData activeIcon,
+              String label,
+              int badge
+            })>
+        tabs,
     int i,
   ) {
-    final tab      = tabs[i];
+    final tab = tabs[i];
     final selected = widget.currentIndex == i;
+    final palette = context.palette;
+    final color = selected
+        ? palette.brandText
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final badgeText = tab.badge > 9 ? '9+' : '${tab.badge}';
     return [
       Expanded(
-        child: InkWell(
-          onTap: () => context.go(tab.path),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    selected ? tab.activeIcon : tab.icon,
-                    size: 20,
-                    color: selected ? AppColors.primary : Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-                  if (tab.badge > 0)
-                    Positioned(
-                      right: -6, top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(color: AppColors.event, shape: BoxShape.circle),
-                        constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                        child: Text(
-                          tab.badge > 9 ? '9+' : '${tab.badge}',
-                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800),
-                          textAlign: TextAlign.center,
+        child: Semantics(
+          button: true,
+          selected: selected,
+          label: tab.badge > 0 ? '${tab.label}, $badgeText unread' : tab.label,
+          excludeSemantics: true,
+          child: InkWell(
+            onTap: () => context.go(tab.path),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(selected ? tab.activeIcon : tab.icon,
+                        size: 22, color: color),
+                    if (tab.badge > 0)
+                      Positioned(
+                        right: -8,
+                        top: -5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AppColors.badge,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          constraints:
+                              const BoxConstraints(minWidth: 18, minHeight: 16),
+                          child: Text(
+                            badgeText,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Text(
-                tab.label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? AppColors.primary : Theme.of(context).textTheme.bodySmall?.color,
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  tab.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

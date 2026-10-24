@@ -3,87 +3,85 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/providers/home_provider.dart';
 import '../../home/widgets/post_card.dart';
+import '../discover_categories.dart';
 import '../providers/discover_provider.dart';
 
 class DiscoverCategoryScreen extends ConsumerWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final String? postType; // marketplace | job | event
-  final String? tag; // for tag-based categories like Scholarships
+  /// [DiscoverCategory.key] from the route, e.g. `marketplace`.
+  final String categoryKey;
 
-  const DiscoverCategoryScreen({
-    super.key,
-    required this.title,
-    required this.icon,
-    required this.color,
-    this.postType,
-    this.tag,
-  });
+  const DiscoverCategoryScreen({super.key, required this.categoryKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final params = (postType: postType, tag: tag);
+    final category = DiscoverCategory.byKey(categoryKey);
+    if (category == null || category.comingSoon) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: EmptyState(
+          icon: Icons.explore_outlined,
+          message: category == null
+              ? 'This category does not exist.'
+              : '${category.label} is coming in a future update.',
+          actionLabel: 'Back to Discover',
+          onAction: () => context.go('/discover'),
+        ),
+      );
+    }
+
+    final params = (postType: category.postType, tag: category.tag);
     final postsAsync = ref.watch(discoverCategoryPostsProvider(params));
     final overlay = ref.watch(engagementOverlayProvider);
     final followOverlay = ref.watch(followOverlayProvider);
     final sort = ref.watch(discoverSortProvider);
     final theme = Theme.of(context);
+    final colors = category.colors(context);
+    final brand = context.palette.brandText;
+
+    Widget sortItem(DiscoverSort value, IconData icon, String label) {
+      final selected = sort == value;
+      return Row(children: [
+        Icon(icon, size: 18, color: selected ? brand : null),
+        const SizedBox(width: 8),
+        Text(label,
+            style: TextStyle(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                color: selected ? brand : null)),
+      ]);
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [
-          Icon(icon, color: color, size: 20),
+          Icon(category.icon, color: colors.fg, size: 22),
           const SizedBox(width: 8),
-          Text(title, style: const TextStyle(fontSize: 17)),
+          Flexible(
+            child: Text(category.label,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium),
+          ),
         ]),
         actions: [
           PopupMenuButton<DiscoverSort>(
+            tooltip: 'Sort',
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            icon: const Icon(Icons.sort, size: 20),
+            icon: const Icon(Icons.sort, size: 22),
             onSelected: (s) =>
                 ref.read(discoverSortProvider.notifier).state = s,
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: DiscoverSort.newest,
-                child: Row(children: [
-                  Icon(Icons.access_time,
-                      size: 16,
-                      color: sort == DiscoverSort.newest
-                          ? AppColors.primary
-                          : null),
-                  const SizedBox(width: 8),
-                  Text('Newest',
-                      style: TextStyle(
-                          fontWeight: sort == DiscoverSort.newest
-                              ? FontWeight.w700
-                              : FontWeight.normal,
-                          color: sort == DiscoverSort.newest
-                              ? AppColors.primary
-                              : null)),
-                ]),
+                child:
+                    sortItem(DiscoverSort.newest, Icons.access_time, 'Newest'),
               ),
               PopupMenuItem(
                 value: DiscoverSort.mostHelpful,
-                child: Row(children: [
-                  Icon(Icons.thumb_up_outlined,
-                      size: 16,
-                      color: sort == DiscoverSort.mostHelpful
-                          ? AppColors.primary
-                          : null),
-                  const SizedBox(width: 8),
-                  Text('Most helpful',
-                      style: TextStyle(
-                          fontWeight: sort == DiscoverSort.mostHelpful
-                              ? FontWeight.w700
-                              : FontWeight.normal,
-                          color: sort == DiscoverSort.mostHelpful
-                              ? AppColors.primary
-                              : null)),
-                ]),
+                child: sortItem(DiscoverSort.mostHelpful,
+                    Icons.thumb_up_outlined, 'Most helpful'),
               ),
             ],
           ),
@@ -95,19 +93,26 @@ class DiscoverCategoryScreen extends ConsumerWidget {
             ref.invalidate(discoverCategoryPostsProvider(params)),
         child: postsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Couldn\'t load: $e')),
+          error: (e, _) => ErrorState(
+            error: e,
+            action: 'load ${category.label.toLowerCase()}',
+            onRetry: () =>
+                ref.invalidate(discoverCategoryPostsProvider(params)),
+          ),
           data: (posts) {
             if (posts.isEmpty) {
+              // ListView so pull-to-refresh still works on an empty list.
               return ListView(
                 children: [
-                  const SizedBox(height: 100),
-                  Center(
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(icon, size: 44, color: color.withValues(alpha: 0.3)),
-                      const SizedBox(height: 12),
-                      Text('No $title posts yet.',
-                          style: theme.textTheme.bodySmall),
-                    ]),
+                  const SizedBox(height: 80),
+                  EmptyState(
+                    icon: category.icon,
+                    message:
+                        'No ${category.label.toLowerCase()} posts yet. Be the first to post one.',
+                    actionLabel: 'Create a post',
+                    onAction: () => context.push(category.postType != null
+                        ? '/compose/${category.postType}'
+                        : '/create'),
                   ),
                 ],
               );
@@ -139,6 +144,7 @@ class DiscoverCategoryScreen extends ConsumerWidget {
                   onFollow: () => ref
                       .read(engagementProvider.notifier)
                       .toggleFollow(post.authorId, isFollowing),
+                  onAvatarTap: () => context.push('/user/${post.authorId}'),
                 );
               },
             );

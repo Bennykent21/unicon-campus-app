@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +7,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../core/utils/share_links.dart';
 import '../models/profile_model.dart';
 import '../providers/profile_provider.dart';
 
@@ -62,7 +63,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => ErrorState(error: e, action: 'load your profile'),
         data: (profile) {
           if (profile == null) {
             return Center(
@@ -86,13 +87,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     uploadingAvatar: _uploadingAvatar,
                     onPickAvatar: _pickAndUploadAvatar,
                     onEditProfile: () => context.push('/profile-edit'),
-                    onShareProfile: () {
-                      Clipboard.setData(ClipboardData(
-                          text: 'uniapp://profile/${profile.id}'));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Profile link copied!'),
-                          behavior: SnackBarBehavior.floating));
-                    },
+                    onShareProfile: () => ShareLinks.copy(
+                        context, ShareLinks.user(profile.id),
+                        message: 'Profile link copied'),
                     themeMode: themeMode,
                     onToggleTheme: () => ref
                         .read(themeModeProvider.notifier)
@@ -144,7 +141,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: Text('Settings',
                             style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                fontSize: 11,
+                                fontSize: 12,
                                 letterSpacing: 0.8,
                                 color: theme.textTheme.bodySmall?.color
                                     ?.withValues(alpha: 0.5))),
@@ -317,7 +314,7 @@ class _ProfileHeader extends StatelessWidget {
                     else
                       CircleAvatar(
                         radius: 44,
-                        backgroundColor: AppColors.primaryLight,
+                        backgroundColor: context.palette.brandSoft,
                         backgroundImage: profile.avatarUrl != null
                             ? NetworkImage(profile.avatarUrl!)
                             : null,
@@ -326,10 +323,10 @@ class _ProfileHeader extends StatelessWidget {
                                 profile.fullName.isNotEmpty
                                     ? profile.fullName[0]
                                     : '?',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.primary))
+                                    color: context.palette.brandText))
                             : null,
                       ),
                     // Camera badge
@@ -368,13 +365,13 @@ class _ProfileHeader extends StatelessWidget {
               const SizedBox(height: 8),
               if (profile.departmentLevel.isNotEmpty) ...[
                 Row(children: [
-                  const Icon(Icons.school_outlined,
-                      size: 13, color: AppColors.primary),
+                  Icon(Icons.school_outlined,
+                      size: 13, color: context.palette.brandText),
                   const SizedBox(width: 5),
                   Text(profile.departmentLevel,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.primary,
+                          color: context.palette.brandText,
                           fontWeight: FontWeight.w600)),
                 ]),
                 const SizedBox(height: 4),
@@ -444,7 +441,7 @@ class _Stat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label,
             style:
-                Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11)),
+                Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12)),
       ]);
 }
 
@@ -475,7 +472,7 @@ class _ActivityRow extends StatelessWidget {
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
-                    ?.copyWith(fontSize: 11))
+                    ?.copyWith(fontSize: 12))
             : null,
         trailing: const Icon(Icons.chevron_right, size: 18),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),

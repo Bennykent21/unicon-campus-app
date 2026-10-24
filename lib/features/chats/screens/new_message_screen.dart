@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../profile/models/profile_model.dart';
 
 final _userSearchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -168,7 +169,7 @@ class _NewMessageScreenState extends ConsumerState<NewMessageScreen> {
                 )
               : results.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error:   (e, _) => Center(child: Text('Error: $e')),
+                  error:   (e, _) => ErrorState(error: e, action: 'load people'),
                   data:    (users) {
                     if (users.isEmpty) {
                       return Center(
@@ -187,14 +188,14 @@ class _NewMessageScreenState extends ConsumerState<NewMessageScreen> {
                           onTap: () => _startChat(user.id),
                           leading: CircleAvatar(
                             radius: 20,
-                            backgroundColor: AppColors.primaryLight,
+                            backgroundColor: context.palette.brandSoft,
                             backgroundImage: user.avatarUrl != null
                                 ? NetworkImage(user.avatarUrl!) : null,
                             child: user.avatarUrl == null
                                 ? Text(
                                     user.fullName.isNotEmpty ? user.fullName[0] : '?',
-                                    style: const TextStyle(
-                                        color: AppColors.primary, fontWeight: FontWeight.bold))
+                                    style: TextStyle(
+                                        color: context.palette.brandText, fontWeight: FontWeight.bold))
                                 : null,
                           ),
                           title: Text(user.fullName,

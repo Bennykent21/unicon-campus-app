@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/providers/home_provider.dart';
 import '../../home/models/post_model.dart';
 import '../../home/widgets/post_card.dart';
@@ -45,7 +46,7 @@ class UserProfileScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Profile', style: TextStyle(fontSize: 17))),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error:   (e, _) => Center(child: Text('Error: $e')),
+        error:   (e, _) => ErrorState(error: e, action: 'load this profile'),
         data:    (profile) {
           if (profile == null) return const Center(child: Text('User not found'));
 
@@ -81,13 +82,13 @@ class UserProfileScreen extends ConsumerWidget {
                             bottom: -40, left: 20,
                             child: CircleAvatar(
                               radius: 40,
-                              backgroundColor: AppColors.primaryLight,
+                              backgroundColor: context.palette.brandSoft,
                               backgroundImage: profile.avatarUrl != null
                                   ? NetworkImage(profile.avatarUrl!) : null,
                               child: profile.avatarUrl == null
                                   ? Text(profile.fullName.isNotEmpty ? profile.fullName[0] : '?',
-                                      style: const TextStyle(fontSize: 28,
-                                          fontWeight: FontWeight.bold, color: AppColors.primary))
+                                      style: TextStyle(fontSize: 28,
+                                          fontWeight: FontWeight.bold, color: context.palette.brandText))
                                   : null,
                             ),
                           ),
@@ -112,10 +113,10 @@ class UserProfileScreen extends ConsumerWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(children: [
-                                  const Icon(Icons.school_outlined, size: 13, color: AppColors.primary),
+                                  Icon(Icons.school_outlined, size: 13, color: context.palette.brandText),
                                   const SizedBox(width: 5),
                                   Text(profile.departmentLevel,
-                                      style: const TextStyle(fontSize: 13, color: AppColors.primary,
+                                      style: TextStyle(fontSize: 13, color: context.palette.brandText,
                                           fontWeight: FontWeight.w600)),
                                 ]),
                               ),
@@ -156,7 +157,7 @@ class UserProfileScreen extends ConsumerWidget {
                                       isFollowing ? 'Following' : 'Follow',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
-                                        color: isFollowing ? AppColors.primary : Colors.white,
+                                        color: isFollowing ? context.palette.brandText : Colors.white,
                                       ),
                                     ),
                                   ),
@@ -218,7 +219,7 @@ class UserProfileScreen extends ConsumerWidget {
                       child: Padding(padding: EdgeInsets.all(24),
                           child: Center(child: CircularProgressIndicator()))),
                   error: (e, _) => SliverToBoxAdapter(
-                      child: Padding(padding: const EdgeInsets.all(16), child: Text('Error: $e'))),
+                      child: ErrorState(error: e, action: 'load posts')),
                   data: (posts) {
                     if (posts.isEmpty) {
                       return SliverToBoxAdapter(
@@ -350,7 +351,7 @@ class _Stat extends StatelessWidget {
     child: Column(children: [
       Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: valueColor)),
       const SizedBox(height: 2),
-      Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11)),
+      Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12)),
     ]),
   );
 }

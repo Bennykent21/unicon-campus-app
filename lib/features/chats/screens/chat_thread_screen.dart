@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/widgets/image_viewer.dart';
 import '../models/message_model.dart';
 import '../providers/chat_thread_provider.dart';
@@ -141,7 +142,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
             return Row(children: [
               CircleAvatar(
                 radius: 17,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: context.palette.brandSoft,
                 backgroundImage: info['avatar_url'] != null
                     ? NetworkImage(info['avatar_url'] as String)
                     : null,
@@ -150,8 +151,8 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                         (info['title'] as String?)?.isNotEmpty == true
                             ? (info['title'] as String)[0]
                             : '?',
-                        style: const TextStyle(
-                            color: AppColors.primary,
+                        style: TextStyle(
+                            color: context.palette.brandText,
                             fontWeight: FontWeight.bold,
                             fontSize: 13))
                     : null,
@@ -184,7 +185,7 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
           Expanded(
             child: messagesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => ErrorState(error: e, action: 'load messages'),
               data: (messages) {
                 if (messages.isEmpty) {
                   return Center(
@@ -256,8 +257,8 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
             ),
             child: Row(children: [
               IconButton(
-                icon: const Icon(Icons.add_circle_outline,
-                    color: AppColors.primary),
+                icon: Icon(Icons.add_circle_outline,
+                    color: context.palette.brandText),
                 onPressed: _pickImage,
               ),
               Expanded(
@@ -290,8 +291,8 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2)),
                     )
                   : IconButton(
-                      icon: const Icon(Icons.send_rounded,
-                          color: AppColors.primary),
+                      icon: Icon(Icons.send_rounded,
+                          color: context.palette.brandText),
                       onPressed: _send,
                     ),
             ]),
@@ -327,7 +328,7 @@ class _MessageBubble extends StatelessWidget {
               child: showAvatar
                   ? CircleAvatar(
                       radius: 12,
-                      backgroundColor: AppColors.primaryLight,
+                      backgroundColor: context.palette.brandSoft,
                       backgroundImage: message.senderAvatarUrl != null
                           ? NetworkImage(message.senderAvatarUrl!)
                           : null,
@@ -336,9 +337,9 @@ class _MessageBubble extends StatelessWidget {
                               message.senderName.isNotEmpty
                                   ? message.senderName[0]
                                   : '?',
-                              style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.primary,
+                              style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: context.palette.brandText,
                                   fontWeight: FontWeight.bold))
                           : null,
                     )
@@ -433,7 +434,7 @@ class _MessageBubble extends StatelessWidget {
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11.5,
                         color: isMine
                             ? Colors.white70
                             : theme.textTheme.bodySmall?.color

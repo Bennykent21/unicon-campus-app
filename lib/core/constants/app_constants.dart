@@ -17,32 +17,9 @@ class AppConstants {
   static const String postTypeMarketplace = 'marketplace';
   static const String postTypeJob = 'job';
   static const String postTypeEvent = 'event';
+  static const String postTypeAnnouncement = 'announcement';
 
-  // ── Discover categories ─────────────────────────────────────────────────────
-  static const List<Map<String, String>> discoverCategories = [
-    {
-      'key': 'marketplace',
-      'label': 'Marketplace',
-      'subtitle': 'Buy and sell items'
-    },
-    {'key': 'jobs', 'label': 'Jobs', 'subtitle': 'Find internships and jobs'},
-    {'key': 'events', 'label': 'Events', 'subtitle': 'See upcoming events'},
-    {
-      'key': 'scholarships',
-      'label': 'Scholarships',
-      'subtitle': 'Find scholarship opportunities'
-    },
-    {
-      'key': 'clubs',
-      'label': 'Clubs & Societies',
-      'subtitle': 'Connect with campus clubs'
-    },
-    {
-      'key': 'trending',
-      'label': 'Trending Topics',
-      'subtitle': 'What\'s trending on campus'
-    },
-  ];
+  // Discover categories live in lib/features/discover/discover_categories.dart.
 
   // ── Reputation points ───────────────────────────────────────────────────────
   static const int pointsHelpful = 5;

@@ -13,6 +13,7 @@ const _typeFilterMap = {
   'Marketplace': 'marketplace',
   'Job': 'job',
   'Event': 'event',
+  'Announcement': 'announcement',
   'General': 'general',
 };
 
@@ -54,8 +55,8 @@ final trendingTopicsProvider =
     FutureProvider.autoDispose<List<String>>((ref) async {
   final client = SupabaseService.client;
   try {
-    final data = await client.rpc('get_trending_topics',
-        params: {'days_back': 7, 'max_topics': 12});
+    final data = await client
+        .rpc('get_trending_topics', params: {'days_back': 7, 'max_topics': 12});
     return (data as List).map((row) => row['tag'] as String).toList();
   } catch (e, st) {
     AppLogger.warning(
@@ -70,8 +71,7 @@ final trendingTopicsProvider =
         .select('tags')
         .gte('created_at', since)
         .limit(200);
-    return computeTrendingTags(
-        (data as List).cast<Map<String, dynamic>>());
+    return computeTrendingTags((data as List).cast<Map<String, dynamic>>());
   }
 });
 
@@ -175,7 +175,8 @@ class FeedNotifier extends StateNotifier<FeedState> {
         hasMore: page.length == pageSize,
       );
     } catch (e, st) {
-      AppLogger.error('Failed to load feed', name: 'feed', error: e, stackTrace: st);
+      AppLogger.error('Failed to load feed',
+          name: 'feed', error: e, stackTrace: st);
       if (!mounted) return;
       state = FeedState(error: e.toString(), hasMore: false);
     }
