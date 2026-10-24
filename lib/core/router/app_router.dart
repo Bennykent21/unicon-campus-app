@@ -21,6 +21,9 @@ import '../../features/profile/screens/follow_list_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/signup_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/internships/screens/internships_screen.dart';
+import '../../features/internships/screens/internship_detail_screen.dart';
+import '../../features/internships/screens/applications_screen.dart';
 
 /// Cache for the profile-completeness check so the redirect callback does
 /// NOT hit the database on every single navigation.
@@ -137,6 +140,21 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/new-message',
       builder: (_, __) => const NewMessageScreen(),
+    ),
+    GoRoute(
+      path: '/internships',
+      builder: (_, __) => const InternshipsScreen(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (_, state) =>
+              InternshipDetailScreen(internshipId: state.pathParameters['id']!),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/applications',
+      builder: (_, __) => const ApplicationsScreen(),
     ),
     GoRoute(
       path: '/discover/:category',

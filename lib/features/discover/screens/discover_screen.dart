@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../internships/providers/internship_providers.dart';
 import '../discover_categories.dart';
 
-class DiscoverScreen extends StatelessWidget {
+class DiscoverScreen extends ConsumerWidget {
   const DiscoverScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Discover')),
@@ -25,7 +28,7 @@ class DiscoverScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const _InternshipsFeature(),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Semantics(
@@ -39,6 +42,103 @@ class DiscoverScreen extends StatelessWidget {
             Divider(height: 1, color: theme.dividerTheme.color),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Lead card: how many internships fit the student right now and the
+/// nearest deadline.
+class _InternshipsFeature extends ConsumerWidget {
+  const _InternshipsFeature();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final all = ref.watch(internshipsProvider).valueOrNull;
+    final me = ref.watch(studentMatchInfoProvider);
+    final today = DateTime.now();
+
+    String line =
+        'SIWES placements, internships, graduate schemes and remote programmes.';
+    String? next;
+    if (all != null) {
+      final open = applyInternshipFilter(
+          all, const InternshipFilter(matchesOnly: false, openNowOnly: true),
+          today: today);
+      final mine = applyInternshipFilter(
+          all, const InternshipFilter(matchesOnly: true, openNowOnly: true),
+          department: me.department, level: me.level, today: today);
+      final who = (me.department ?? '').isNotEmpty ? me.department! : 'you';
+      line = '${open.length} you can apply to now. ${mine.length} match $who.';
+      final soonest = open.where((i) => i.deadline != null).toList()
+        ..sort((a, b) => a.deadline!.compareTo(b.deadline!));
+      if (soonest.isNotEmpty) {
+        final s = soonest.first;
+        next =
+            'Next deadline: ${s.companyName}, ${DateFormat('d MMM').format(s.deadline!)}';
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Material(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => context.push('/internships'),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Internships and SIWES',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text(line,
+                    style: const TextStyle(
+                        color: Color(0xF2FFFFFF), fontSize: 14, height: 1.35)),
+                const SizedBox(height: 12),
+                Row(children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: const Text('See internships',
+                        style: TextStyle(
+                            color: Color(0xFF3B2A9E),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5)),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'My applications',
+                    onPressed: () => context.push('/applications'),
+                    icon: const Icon(Icons.checklist_rtl, color: Colors.white),
+                  ),
+                ]),
+                if (next != null) ...[
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    const Icon(Icons.schedule,
+                        size: 15, color: Color(0xE6FFFFFF)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(next,
+                          style: const TextStyle(
+                              color: Color(0xE6FFFFFF), fontSize: 12.5)),
+                    ),
+                  ]),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
