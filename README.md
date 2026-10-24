@@ -83,6 +83,10 @@ Every push builds a release APK on GitHub Actions (`.github/workflows/android.ym
 
 The build reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from repository secrets when they are set (Settings → Secrets and variables → Actions); otherwise it uses this project's public client key.
 
+Each release has two files: `-arm64.apk` is smaller and fits almost every phone; the other works on all of them. The app id is `com.bennykent.unicon`, so a build from before that change installs as a separate app: uninstall the old one.
+
+To sign with your own release key (needed for the Play Store), add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets. Locally, put the same values in `android/key.properties` (gitignored). Changing the key means uninstalling builds signed with the old one.
+
 ## Setup
 
 1. `flutter pub get`

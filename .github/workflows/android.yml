@@ -17,6 +17,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,14 +58,38 @@ jobs:
           path: ~/.android/debug.keystore
           key: unicon-debug-keystore-v1
 
+      # Optional: sign with your own release key (needed for the Play Store).
+      # Add ANDROID_KEYSTORE_BASE64 (base64 of the .jks), ANDROID_KEYSTORE_PASSWORD,
+      # ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD as repository secrets.
+      # Without them the APK is signed with the cached key above.
+      - name: Use release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        if: env.HAS_RELEASE_KEY == 'true'
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          {
+            echo "storeFile=upload-keystore.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+
       - name: Build APK
-        run: flutter build apk --release --build-number=${{ github.run_number }}
+        run: |
+          flutter build apk --release --build-number=${{ github.run_number }}
+          # A smaller APK for 64-bit phones (almost every phone from 2017 on).
+          flutter build apk --release --split-per-abi --target-platform android-arm64 --build-number=${{ github.run_number }}
 
       - name: Name the APK
         run: |
           short_sha="$(git rev-parse --short HEAD)"
           mkdir -p dist
           cp build/app/outputs/flutter-apk/app-release.apk "dist/unicon-${{ github.run_number }}-${short_sha}.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "dist/unicon-${{ github.run_number }}-${short_sha}-arm64.apk"
           ls -lh dist
 
       - uses: actions/upload-artifact@v4
@@ -85,3 +111,4 @@ jobs:
           body: |
             Built from `${{ github.sha }}` on `${{ github.ref_name }}`.
             Download the `.apk` below on your Android phone and open it. You may need to allow installs from your browser.
+            The `-arm64` file is smaller and works on almost every phone; if it won't install, use the other one.

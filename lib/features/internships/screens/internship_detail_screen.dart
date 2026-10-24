@@ -40,7 +40,10 @@ class InternshipDetailScreen extends ConsumerWidget {
                 icon: Icons.work_off_outlined,
                 message: 'This listing was removed or is no longer available.',
                 actionLabel: 'Back to internships',
-                onAction: () => context.go('/internships'),
+                // Opened from a shared link there may be nothing to go back to.
+                onAction: () => context.canPop()
+                    ? context.pop()
+                    : context.pushReplacement('/internships'),
               ),
             )
           : _DetailView(internship: i),

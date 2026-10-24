@@ -26,6 +26,30 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
     with WidgetsBindingObserver {
   bool _navVisible = true;
   Timer? _pollTimer;
+  DateTime? _lastBackOnHome;
+
+  /// Tabs replace each other (context.go), so the system back gesture has
+  /// nothing to pop and would close the app. Instead: back from any tab goes
+  /// to Home, and on Home a second back within two seconds exits.
+  void _handleBack() {
+    if (widget.currentIndex != 0) {
+      context.go('/home');
+      return;
+    }
+    final now = DateTime.now();
+    if (_lastBackOnHome != null &&
+        now.difference(_lastBackOnHome!) < const Duration(seconds: 2)) {
+      SystemNavigator.pop();
+      return;
+    }
+    _lastBackOnHome = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(
+        content: Text('Swipe back again to exit'),
+        duration: Duration(seconds: 2),
+      ));
+  }
 
   @override
   void initState() {
@@ -111,47 +135,53 @@ class _BottomNavShellState extends ConsumerState<BottomNavShell>
       ),
     ];
 
-    return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (n) {
-          _onScroll(n);
-          return false;
-        },
-        child: widget.child,
-      ),
-      floatingActionButton: AnimatedScale(
-        scale: _navVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: FloatingActionButton(
-          onPressed: () => context.push('/create'),
-          elevation: 2,
-          tooltip: 'Create',
-          child: const Icon(Icons.add, size: 26),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: Scaffold(
+        body: NotificationListener<ScrollNotification>(
+          onNotification: (n) {
+            _onScroll(n);
+            return false;
+          },
+          child: widget.child,
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: AnimatedSize(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: _navVisible
-            ? BottomAppBar(
-                shape: const CircularNotchedRectangle(),
-                notchMargin: 6,
-                padding: EdgeInsets.zero,
-                height: 64,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ..._buildTab(context, tabs, 0),
-                    ..._buildTab(context, tabs, 1),
-                    const SizedBox(width: 48),
-                    ..._buildTab(context, tabs, 2),
-                    ..._buildTab(context, tabs, 3),
-                  ],
-                ),
-              )
-            : const SizedBox.shrink(),
+        floatingActionButton: AnimatedScale(
+          scale: _navVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: FloatingActionButton(
+            onPressed: () => context.push('/create'),
+            elevation: 2,
+            tooltip: 'Create',
+            child: const Icon(Icons.add, size: 26),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: _navVisible
+              ? BottomAppBar(
+                  shape: const CircularNotchedRectangle(),
+                  notchMargin: 6,
+                  padding: EdgeInsets.zero,
+                  height: 64,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ..._buildTab(context, tabs, 0),
+                      ..._buildTab(context, tabs, 1),
+                      const SizedBox(width: 48),
+                      ..._buildTab(context, tabs, 2),
+                      ..._buildTab(context, tabs, 3),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ),
     );
   }

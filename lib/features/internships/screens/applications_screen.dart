@@ -56,7 +56,7 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                   message:
                       'Save listings you like and track each one from saved to offer.',
                   actionLabel: 'Browse internships',
-                  onAction: () => context.go('/internships'),
+                  onAction: () => context.push('/internships'),
                 ),
               ]);
             }

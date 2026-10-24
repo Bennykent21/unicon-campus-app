@@ -1,7 +1,7 @@
 name: university_community_app
 description: "Connect. Learn. Share. Grow. — A unified platform for university students."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -51,12 +51,10 @@ dev_dependencies:
   riverpod_generator: ^2.4.0
   freezed: ^2.5.7
   json_serializable: ^6.8.0
-  flutter_launcher_icons: ^0.14.4
 
-flutter_launcher_icons:
-  android: true
-  ios: false
-  image_path: "assets/icon/unicon_icon.png"
+# The launcher icon is drawn by hand as an adaptive icon in
+# android/app/src/main/res (drawable/ic_launcher_*.xml, mipmap-*). Don't run
+# flutter_launcher_icons: it would replace those with a flat image.
 
 flutter:
   uses-material-design: true

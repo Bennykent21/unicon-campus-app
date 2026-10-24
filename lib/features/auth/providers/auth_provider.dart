@@ -65,7 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = const AuthState(status: AuthStatus.loading);
     try {
-      await SupabaseService.client.auth.signUp(
+      final res = await SupabaseService.client.auth.signUp(
         email: email,
         password: password,
         data: {
@@ -76,6 +76,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
           if (university != null) 'university': university,
         },
       );
+      // handle_new_user() copies only name and username from the metadata,
+      // so save the study details here while we have a session.
+      final userId = res.user?.id;
+      if (res.session != null && userId != null) {
+        final details = {
+          if (department != null) 'department': department,
+          if (level != null) 'level': level,
+          if (university != null) 'university': university,
+        };
+        if (details.isNotEmpty) {
+          try {
+            await SupabaseService.client
+                .from('profiles')
+                .update(details)
+                .eq('id', userId);
+          } catch (e, st) {
+            // Not fatal: the student can add these later in their profile.
+            AppLogger.error('Saving study details failed',
+                name: 'auth', error: e, stackTrace: st);
+          }
+        }
+      }
       state = const AuthState(status: AuthStatus.idle);
       return true;
     } catch (e, st) {

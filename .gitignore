@@ -9,3 +9,8 @@ android/.gradle/
 *.iml
 .idea/
 .vscode/
+
+# Release signing (never commit)
+android/key.properties
+*.jks
+*.keystore
