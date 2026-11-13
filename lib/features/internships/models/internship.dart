@@ -91,6 +91,10 @@ class Internship {
   final String? opensNote;
   final DateTime? deadline;
   final String? unibenNote;
+
+  /// Short name of the only university whose students can take this, or
+  /// null when any student can.
+  final String? universityShortName;
   final String? sourceUrl;
   final DateTime? lastChecked;
   final int alumniCount;
@@ -125,6 +129,7 @@ class Internship {
     this.opensNote,
     this.deadline,
     this.unibenNote,
+    this.universityShortName,
     this.sourceUrl,
     this.lastChecked,
     this.alumniCount = 0,
@@ -167,6 +172,7 @@ class Internship {
         opensNote: json['opens_note'] as String?,
         deadline: _date(json['deadline']),
         unibenNote: json['uniben_note'] as String?,
+        universityShortName: json['university_short_name'] as String?,
         sourceUrl: json['source_url'] as String?,
         lastChecked: _date(json['last_checked']),
         alumniCount: (json['alumni_count'] as num?)?.toInt() ?? 0,
@@ -203,6 +209,7 @@ class Internship {
         opensNote: opensNote,
         deadline: deadline,
         unibenNote: unibenNote,
+        universityShortName: universityShortName,
         sourceUrl: sourceUrl,
         lastChecked: lastChecked,
         alumniCount: alumniCount,

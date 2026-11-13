@@ -197,6 +197,10 @@ class InternshipCard extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     DeadlinePill(internship: i),
+                    if (i.universityShortName != null)
+                      _ProofLine(
+                          icon: Icons.lock_outline,
+                          text: 'Only for ${i.universityShortName} students'),
                     if (tracked && stage != ApplicationStage.saved)
                       Text(stage!.label,
                           style: TextStyle(
@@ -207,8 +211,8 @@ class InternshipCard extends StatelessWidget {
                       _ProofLine(
                           icon: Icons.school_outlined,
                           text: i.alumniCount == 1
-                              ? '1 UNIBEN student trained here'
-                              : '${i.alumniCount} UNIBEN students trained here')
+                              ? '1 UNICON student trained here'
+                              : '${i.alumniCount} UNICON students trained here')
                     else if (i.unibenNote != null && i.unibenNote!.isNotEmpty)
                       _ProofLine(icon: Icons.info_outline, text: i.unibenNote!),
                   ],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/uniben_departments.dart';
 
-/// Department text field that suggests UNIBEN departments as the student
+/// Department text field that suggests common departments as the student
 /// types. Free text is still allowed.
-class DepartmentField extends StatefulWidget {
+class DepartmentField extends StatelessWidget {
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
@@ -16,10 +16,43 @@ class DepartmentField extends StatefulWidget {
   });
 
   @override
-  State<DepartmentField> createState() => _DepartmentFieldState();
+  Widget build(BuildContext context) => SuggestionField(
+        controller: controller,
+        validator: validator,
+        textInputAction: textInputAction,
+        suggestions: unibenDepartments,
+        label: 'Department',
+        hint: 'e.g. Computer Engineering',
+        icon: Icons.apartment_outlined,
+      );
 }
 
-class _DepartmentFieldState extends State<DepartmentField> {
+/// Text field with type-ahead suggestions from a fixed list.
+class SuggestionField extends StatefulWidget {
+  final TextEditingController controller;
+  final String? Function(String?)? validator;
+  final TextInputAction textInputAction;
+  final List<String> suggestions;
+  final String label;
+  final String hint;
+  final IconData icon;
+
+  const SuggestionField({
+    super.key,
+    required this.controller,
+    required this.suggestions,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    this.validator,
+    this.textInputAction = TextInputAction.next,
+  });
+
+  @override
+  State<SuggestionField> createState() => _SuggestionFieldState();
+}
+
+class _SuggestionFieldState extends State<SuggestionField> {
   // RawAutocomplete needs the focus node when it is given a controller.
   final _focusNode = FocusNode();
 
@@ -38,7 +71,7 @@ class _DepartmentFieldState extends State<DepartmentField> {
         optionsBuilder: (value) {
           final q = value.text.trim().toLowerCase();
           if (q.length < 2) return const Iterable<String>.empty();
-          return unibenDepartments
+          return widget.suggestions
               .where((d) => d.toLowerCase().contains(q))
               .take(6);
         },
@@ -49,10 +82,10 @@ class _DepartmentFieldState extends State<DepartmentField> {
           textCapitalization: TextCapitalization.words,
           validator: widget.validator,
           onFieldSubmitted: (_) => onSubmit(),
-          decoration: const InputDecoration(
-            labelText: 'Department',
-            hintText: 'e.g. Computer Engineering',
-            prefixIcon: Icon(Icons.apartment_outlined, size: 20),
+          decoration: InputDecoration(
+            labelText: widget.label,
+            hintText: widget.hint,
+            prefixIcon: Icon(widget.icon, size: 20),
           ),
         ),
         optionsViewBuilder: (context, onSelected, options) => Align(

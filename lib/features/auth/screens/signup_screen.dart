@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/supabase/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/department_field.dart';
+import '../../universities/university_picker.dart';
 import '../providers/auth_provider.dart';
 import '../utils/password_rules.dart';
 import '../widgets/auth_scaffold.dart';
@@ -24,9 +25,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _departmentController = TextEditingController();
-  final _universityController =
-      TextEditingController(text: 'University of Benin');
   String? _level;
+  int? _universityId;
   bool _obscurePassword = true;
 
   @override
@@ -36,7 +36,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _departmentController.dispose();
-    _universityController.dispose();
     super.dispose();
   }
 
@@ -53,7 +52,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           username: _usernameController.text.trim().replaceAll('@', ''),
           department: _trimmedOrNull(_departmentController),
           level: _level,
-          university: _trimmedOrNull(_universityController),
+          universityId: _universityId,
         );
     if (!mounted) return;
     if (success) {
@@ -185,17 +184,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   const SizedBox(height: 24),
                   Text('Your studies', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text('Optional, and you can change them later.',
+                  Text(
+                      'Your university decides whose posts you see. Department and level are optional.',
                       style: theme.textTheme.bodySmall),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _universityController,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'University',
-                      prefixIcon: Icon(Icons.school_outlined, size: 20),
-                    ),
+                  UniversityPickerField(
+                    value: _universityId,
+                    onChanged: (u) => setState(() => _universityId = u.id),
                   ),
                   const SizedBox(height: 14),
                   DepartmentField(controller: _departmentController),

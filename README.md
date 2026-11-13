@@ -1,6 +1,6 @@
 # UNICON — Campus Community App
 
-A full-stack, cross-platform mobile app that centralizes academic discussion, Q&A, a campus marketplace, job/internship listings, events, and real-time messaging for university students — built solo from schema to UI.
+A full-stack, cross-platform mobile app that centralizes academic discussion, Q&A, a campus marketplace, job/internship listings, events, and real-time messaging for university students at any school — built solo from schema to UI.
 
 **Stack:** Flutter · Dart · Riverpod · go_router · Supabase (PostgreSQL, Auth, Realtime, Storage)
 
@@ -13,16 +13,18 @@ Most student projects are CRUD demos. This one required solving real production-
 - **Row Level Security done properly** — every table is protected by RLS, including policies that needed `SECURITY DEFINER` helper functions to avoid infinite recursion (a genuinely tricky Postgres gotcha most tutorials never cover).
 - **Realtime vs. views** — discovered and fixed a subtle bug class where Supabase Realtime silently never fires for database views (only physical tables), which broke live chat/comment updates until traced to the root cause.
 - **Optimistic UI** — engagement actions (likes, saves, follows) update instantly client-side and reconcile with the server in the background, with rollback on failure.
+- **One database, separated by university** — every post belongs to its author's university (stamped by a trigger, never by the client), and RLS shows each student only their own campus. The feed, search, trending topics and comments follow automatically because their views run as the caller. Tested with students at two schools: no reading, commenting, liking or saving across campuses.
 - **Feature-first architecture** — ~50 modular Dart files organized by feature (`home`, `chats`, `profile`, `discover`, `create`, `auth`, `notifications`), not by layer, for maintainability at scale.
 
 ## Features
 
-- **Auth** — email/password signup with guided profile setup, session-aware routing (auto-redirects based on auth + profile completeness)
+- **Auth** — email/password signup with a university picker and guided profile setup, session-aware routing (auto-redirects based on auth + profile completeness)
 - **Home Feed** — infinite-scroll feed supporting 6 post types (general, question, marketplace, job, event, announcement), tag/type filtering, full-text search, trending topics
 - **Engagement** — helpful votes, saves, comments with accepted-answer marking (Q&A style), reputation scoring via Postgres functions
 - **Profile** — editable profile with avatar upload, followers/following, activity history, dark mode (persisted)
 - **Discover** — category browsing for Marketplace, Jobs, Events, Announcements, Scholarships
-- **Internship board** — SIWES placements, internships, graduate trainee schemes and remote programmes open to UNIBEN students, matched to each student's department and level. Each listing shows eligibility, documents to send, step-by-step application instructions, contacts and its source. Students draft their application email or SIWES letter from their profile in one tap, see which UNIBEN students trained at a company, and track each application from saved to offer (private to them through RLS)
+- **Internship board** — open listings for every student, plus listings limited to one university; SIWES placements, internships, graduate trainee schemes and remote programmes matched to each student's department and level. Listings currently cover Benin City, Edo State and remote programmes, with more cities planned. Each listing shows eligibility, documents to send, step-by-step application instructions, contacts and its source. Students draft their application email or SIWES letter from their profile in one tap, see which UNIBEN students trained at a company, and track each application from saved to offer (private to them through RLS)
+- **Universities** — students pick their university at signup; if it isn't listed they can ask for it (even before they have an account). Curators review requests and add universities from a Manage universities screen.
 - **Chat** — real-time 1:1 messaging with image attachments, message deletion, read-state tracking
 - **Notifications** — event-driven via Postgres triggers (comment, helpful, follow, accepted-answer)
 

@@ -72,7 +72,7 @@ class AuthScaffold extends StatelessWidget {
                                     letterSpacing: 1.2,
                                     height: 1.1)),
                             SizedBox(height: 4),
-                            Text('University of Benin, in one app',
+                            Text('Your campus, in one app',
                                 style: TextStyle(
                                     color: Color(0xD9FFFFFF),
                                     fontSize: 14,

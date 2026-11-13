@@ -26,7 +26,9 @@ Widget wrap(Widget child, {Brightness brightness = Brightness.light}) {
 }
 
 Internship listing(
-        {ListingStatus status = ListingStatus.rolling, int alumni = 0}) =>
+        {ListingStatus status = ListingStatus.rolling,
+        int alumni = 0,
+        String? onlyFor}) =>
     Internship(
       id: '1',
       companyId: 'c',
@@ -37,9 +39,28 @@ Internship listing(
       status: status,
       alumniCount: alumni,
       unibenNote: 'Open to students of any Nigerian university.',
+      universityShortName: onlyFor,
     );
 
 void main() {
+  testWidgets('school-only listings say which school', (tester) async {
+    await tester.pumpWidget(wrap(InternshipCard(
+        internship: listing(onlyFor: 'UNILAG'),
+        stage: null,
+        onTap: () {},
+        onToggleSave: () {})));
+    expect(find.text('Only for UNILAG students'), findsOneWidget);
+  });
+
+  testWidgets('open listings carry no school label', (tester) async {
+    await tester.pumpWidget(wrap(InternshipCard(
+        internship: listing(),
+        stage: null,
+        onTap: () {},
+        onToggleSave: () {})));
+    expect(find.textContaining('Only for'), findsNothing);
+  });
+
   testWidgets('shows title, company, facts and timing', (tester) async {
     await tester.pumpWidget(wrap(InternshipCard(
         internship: listing(),
@@ -61,7 +82,7 @@ void main() {
         stage: null,
         onTap: () {},
         onToggleSave: () {})));
-    expect(find.text('3 UNIBEN students trained here'), findsOneWidget);
+    expect(find.text('3 UNICON students trained here'), findsOneWidget);
     expect(find.text('Open to students of any Nigerian university.'),
         findsNothing);
   });

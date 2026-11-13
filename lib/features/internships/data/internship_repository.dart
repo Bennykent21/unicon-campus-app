@@ -108,7 +108,7 @@ class InternshipRepository {
         .eq('internship_id', internshipId);
   }
 
-  /// UNIBEN students who said they trained at [companyId], newest first.
+  /// Students who said they trained at [companyId], newest first.
   Future<List<CompanyAlumnus>> fetchAlumni(String companyId) async {
     final rows = await _client
         .from('internship_alumni')

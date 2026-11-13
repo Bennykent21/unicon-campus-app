@@ -6,6 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/department_field.dart';
+import '../../universities/university_picker.dart';
+import '../../home/providers/home_provider.dart';
+import '../models/profile_model.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -20,12 +23,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
-  final _universityCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
   final _departmentCtrl =
       TextEditingController(); // own controller so initialValue isn't needed
 
   String? _selectedLevel;
+  int? _universityId;
+  bool _prefilled = false;
   File? _avatarFile;
   int _step = 0;
 
@@ -33,10 +37,23 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   void dispose() {
     _fullNameCtrl.dispose();
     _usernameCtrl.dispose();
-    _universityCtrl.dispose();
     _bioCtrl.dispose();
     _departmentCtrl.dispose();
     super.dispose();
+  }
+
+  /// Fills the form from the saved profile once, so editing (or adding a
+  /// missing university) doesn't mean retyping everything.
+  void _prefill(ProfileModel? p) {
+    if (_prefilled || p == null) return;
+    _prefilled = true;
+    _fullNameCtrl.text = p.fullName;
+    _usernameCtrl.text = p.username;
+    _bioCtrl.text = p.bio ?? '';
+    _departmentCtrl.text = p.department ?? '';
+    _selectedLevel =
+        AppConstants.levels.contains(p.level) ? p.level : _selectedLevel;
+    _universityId = p.universityId;
   }
 
   Future<void> _pickAvatar() async {
@@ -58,21 +75,25 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               ? null
               : _departmentCtrl.text.trim(),
           level: _selectedLevel,
-          university: _universityCtrl.text.trim().isEmpty
-              ? null
-              : _universityCtrl.text.trim(),
+          universityId: _universityId,
           bio: _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
           avatarFile: _avatarFile,
         );
 
     if (ok && mounted) {
       ref.invalidate(myProfileProvider); // fixed: invalidate instead of refresh
+      // A new university means a different campus feed.
+      ref.invalidate(feedPostsProvider);
+      ref.invalidate(trendingTopicsProvider);
       context.go('/home');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(myProfileProvider).valueOrNull;
+    _prefill(profile);
+    final needsUniversity = profile != null && profile.universityId == null;
     final updateState = ref.watch(profileUpdateProvider);
     final isLoading = updateState.status == ProfileUpdateStatus.loading;
     final theme = Theme.of(context);
@@ -95,6 +116,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (needsUniversity) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: context.palette.brandSoft,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      'UNICON is now open to every university. Choose yours on the next step to see your campus feed.',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (widget.isFirstTime) ...[
                   const SizedBox(height: 16),
                   Text('Set up your profile',
@@ -187,13 +223,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                 ] else ...[
                   // ── Step 1: University details ──────────────────────────────
-                  TextFormField(
-                    controller: _universityCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'University',
-                      hintText: 'e.g. University of Lagos',
-                    ),
-                    textCapitalization: TextCapitalization.words,
+                  UniversityPickerField(
+                    value: _universityId,
+                    onChanged: (u) => setState(() => _universityId = u.id),
                   ),
                   const SizedBox(height: 14),
                   DepartmentField(controller: _departmentCtrl),
@@ -253,7 +285,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       ),
                     ],
                   ),
-                if (widget.isFirstTime) ...[
+                if (widget.isFirstTime && !needsUniversity) ...[
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: isLoading ? null : () => context.go('/home'),

@@ -10,6 +10,7 @@ import '../../../core/supabase/supabase_service.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/utils/share_links.dart';
 import '../models/profile_model.dart';
+import '../../universities/university.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -36,7 +37,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           username: ref.read(myProfileProvider).valueOrNull?.username ?? '',
           department: ref.read(myProfileProvider).valueOrNull?.department,
           level: ref.read(myProfileProvider).valueOrNull?.level,
-          university: ref.read(myProfileProvider).valueOrNull?.university,
+          universityId: ref.read(myProfileProvider).valueOrNull?.universityId,
           bio: ref.read(myProfileProvider).valueOrNull?.bio,
           avatarFile: File(picked.path),
         );
@@ -87,6 +88,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     uploadingAvatar: _uploadingAvatar,
                     onPickAvatar: _pickAndUploadAvatar,
                     onEditProfile: () => context.push('/profile-edit'),
+                    isCurator:
+                        ref.watch(isCuratorProvider).valueOrNull ?? false,
+                    onManageUniversities: () =>
+                        context.push('/universities/manage'),
                     onShareProfile: () => ShareLinks.copy(
                         context, ShareLinks.user(profile.id),
                         message: 'Profile link copied'),
@@ -232,6 +237,8 @@ class _ProfileHeader extends StatelessWidget {
   final bool uploadingAvatar;
   final VoidCallback onPickAvatar;
   final VoidCallback onEditProfile;
+  final bool isCurator;
+  final VoidCallback onManageUniversities;
   final VoidCallback onShareProfile;
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
@@ -241,6 +248,8 @@ class _ProfileHeader extends StatelessWidget {
     required this.uploadingAvatar,
     required this.onPickAvatar,
     required this.onEditProfile,
+    required this.isCurator,
+    required this.onManageUniversities,
     required this.onShareProfile,
     required this.themeMode,
     required this.onToggleTheme,
@@ -290,9 +299,15 @@ class _ProfileHeader extends StatelessWidget {
                       value: 'share',
                       child: _MenuItem(
                           Icons.ios_share_outlined, 'Share Profile', null)),
+                  if (isCurator)
+                    const PopupMenuItem(
+                        value: 'universities',
+                        child: _MenuItem(Icons.account_balance_outlined,
+                            'Manage universities', null)),
                 ],
                 onSelected: (v) {
                   if (v == 'edit') onEditProfile();
+                  if (v == 'universities') onManageUniversities();
                   if (v == 'share') onShareProfile();
                 },
               ),
