@@ -91,7 +91,7 @@ class ProfileUpdateNotifier extends StateNotifier<ProfileUpdateState> {
     required String username,
     String? department,
     String? level,
-    String? university,
+    int? universityId,
     String? bio,
     File? avatarFile,
   }) async {
@@ -119,7 +119,7 @@ class ProfileUpdateNotifier extends StateNotifier<ProfileUpdateState> {
         'username': username.trim(),
         if (department != null) 'department': department.trim(),
         if (level != null) 'level': level.trim(),
-        if (university != null) 'university': university.trim(),
+        if (universityId != null) 'university_id': universityId,
         if (bio != null) 'bio': bio.trim(),
         if (avatarUrl != null) 'avatar_url': avatarUrl,
       });

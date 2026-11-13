@@ -58,12 +58,13 @@ final appRouter = GoRouter(
 
       final profile = await SupabaseService.client
           .from('profiles')
-          .select('full_name, username')
+          .select('full_name, username, university_id')
           .eq('id', userId)
           .maybeSingle();
       final incomplete = profile == null ||
           (profile['full_name'] as String?)?.isEmpty != false ||
-          (profile['username'] as String?)?.isEmpty != false;
+          (profile['username'] as String?)?.isEmpty != false ||
+          profile['university_id'] == null;
       if (incomplete) return '/profile-setup';
 
       // Profile is complete — remember it for subsequent navigations.

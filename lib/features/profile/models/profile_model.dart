@@ -6,6 +6,7 @@ class ProfileModel {
   final String? department;
   final String? level;
   final String? university;
+  final int? universityId;
   final String? bio;
   final int reputation;
   final int postCount;
@@ -21,6 +22,7 @@ class ProfileModel {
     this.department,
     this.level,
     this.university,
+    this.universityId,
     this.bio,
     this.reputation = 0,
     this.postCount = 0,
@@ -64,6 +66,7 @@ class ProfileModel {
       department: json['department'] as String?,
       level: json['level'] as String?,
       university: json['university'] as String?,
+      universityId: (json['university_id'] as num?)?.toInt(),
       bio: json['bio'] as String?,
       reputation: json['reputation'] as int? ?? 0,
       postCount: json['post_count'] as int? ?? 0,
@@ -96,6 +99,7 @@ class ProfileModel {
       department: department ?? this.department,
       level: level ?? this.level,
       university: university ?? this.university,
+      universityId: universityId,
       bio: bio ?? this.bio,
       reputation: reputation ?? this.reputation,
       postCount: postCount ?? this.postCount,

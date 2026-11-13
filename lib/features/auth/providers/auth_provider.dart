@@ -62,7 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String username,
     String? department,
     String? level,
-    String? university,
+    int? universityId,
   }) async {
     state = const AuthState(status: AuthStatus.loading);
     try {
@@ -74,17 +74,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'username': username,
           if (department != null) 'department': department,
           if (level != null) 'level': level,
-          if (university != null) 'university': university,
+          if (universityId != null) 'university_id': universityId,
         },
       );
-      // handle_new_user() copies only name and username from the metadata,
-      // so save the study details here while we have a session.
+      // handle_new_user() copies these from the metadata too; saving them
+      // again here covers databases that predate migration 027.
       final userId = res.user?.id;
       if (res.session != null && userId != null) {
         final details = {
           if (department != null) 'department': department,
           if (level != null) 'level': level,
-          if (university != null) 'university': university,
+          if (universityId != null) 'university_id': universityId,
         };
         if (details.isNotEmpty) {
           try {

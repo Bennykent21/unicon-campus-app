@@ -36,7 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           username: ref.read(myProfileProvider).valueOrNull?.username ?? '',
           department: ref.read(myProfileProvider).valueOrNull?.department,
           level: ref.read(myProfileProvider).valueOrNull?.level,
-          university: ref.read(myProfileProvider).valueOrNull?.university,
+          universityId: ref.read(myProfileProvider).valueOrNull?.universityId,
           bio: ref.read(myProfileProvider).valueOrNull?.bio,
           avatarFile: File(picked.path),
         );

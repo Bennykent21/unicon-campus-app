@@ -13,11 +13,12 @@ Most student projects are CRUD demos. This one required solving real production-
 - **Row Level Security done properly** — every table is protected by RLS, including policies that needed `SECURITY DEFINER` helper functions to avoid infinite recursion (a genuinely tricky Postgres gotcha most tutorials never cover).
 - **Realtime vs. views** — discovered and fixed a subtle bug class where Supabase Realtime silently never fires for database views (only physical tables), which broke live chat/comment updates until traced to the root cause.
 - **Optimistic UI** — engagement actions (likes, saves, follows) update instantly client-side and reconcile with the server in the background, with rollback on failure.
+- **One database, separated by university** — every post belongs to its author's university (stamped by a trigger, never by the client), and RLS shows each student only their own campus. The feed, search, trending topics and comments follow automatically because their views run as the caller. Tested with students at two schools: no reading, commenting, liking or saving across campuses.
 - **Feature-first architecture** — ~50 modular Dart files organized by feature (`home`, `chats`, `profile`, `discover`, `create`, `auth`, `notifications`), not by layer, for maintainability at scale.
 
 ## Features
 
-- **Auth** — email/password signup with guided profile setup, session-aware routing (auto-redirects based on auth + profile completeness)
+- **Auth** — email/password signup with a university picker and guided profile setup, session-aware routing (auto-redirects based on auth + profile completeness)
 - **Home Feed** — infinite-scroll feed supporting 6 post types (general, question, marketplace, job, event, announcement), tag/type filtering, full-text search, trending topics
 - **Engagement** — helpful votes, saves, comments with accepted-answer marking (Q&A style), reputation scoring via Postgres functions
 - **Profile** — editable profile with avatar upload, followers/following, activity history, dark mode (persisted)

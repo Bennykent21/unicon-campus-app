@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/nigerian_universities.dart';
 import '../constants/uniben_departments.dart';
 
 /// Department text field that suggests common departments as the student
@@ -25,29 +24,6 @@ class DepartmentField extends StatelessWidget {
         label: 'Department',
         hint: 'e.g. Computer Engineering',
         icon: Icons.apartment_outlined,
-      );
-}
-
-/// University text field that suggests Nigerian universities as the student
-/// types. Free text is still allowed, so any school works.
-class UniversityField extends StatelessWidget {
-  final TextEditingController controller;
-  final TextInputAction textInputAction;
-
-  const UniversityField({
-    super.key,
-    required this.controller,
-    this.textInputAction = TextInputAction.next,
-  });
-
-  @override
-  Widget build(BuildContext context) => SuggestionField(
-        controller: controller,
-        textInputAction: textInputAction,
-        suggestions: nigerianUniversities,
-        label: 'University',
-        hint: 'e.g. University of Lagos',
-        icon: Icons.school_outlined,
       );
 }
 
