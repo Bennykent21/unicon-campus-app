@@ -67,6 +67,7 @@ class _LetterSheetState extends ConsumerState<_LetterSheet> {
       studentName: profile?.fullName,
       department: profile?.department,
       level: profile?.level,
+      university: profile?.university,
     );
     _subject.text = draft.subject;
     _body.text = draft.body;

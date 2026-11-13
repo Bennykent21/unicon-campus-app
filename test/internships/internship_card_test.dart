@@ -61,7 +61,7 @@ void main() {
         stage: null,
         onTap: () {},
         onToggleSave: () {})));
-    expect(find.text('3 UNIBEN students trained here'), findsOneWidget);
+    expect(find.text('3 UNICON students trained here'), findsOneWidget);
     expect(find.text('Open to students of any Nigerian university.'),
         findsNothing);
   });

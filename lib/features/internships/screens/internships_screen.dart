@@ -117,6 +117,21 @@ class _InternshipsScreenState extends ConsumerState<InternshipsScreen> {
                       onSelectionChanged: (s) =>
                           _update((f) => f.copyWith(matchesOnly: s.first)),
                     ),
+                    const SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.place_outlined,
+                            size: 16, color: theme.colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Listings cover Benin City, Edo State and remote roles for now. More cities are coming.',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

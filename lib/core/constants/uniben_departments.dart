@@ -1,4 +1,5 @@
-/// Departments offered at the University of Benin, used as suggestions when
+/// Common university departments (based on the University of Benin's list),
+/// used as suggestions when
 /// students fill in their department. Students can still type anything:
 /// this list only speeds up entry and keeps spelling consistent, which helps
 /// internship matching.

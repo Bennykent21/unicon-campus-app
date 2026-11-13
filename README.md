@@ -1,6 +1,6 @@
 # UNICON — Campus Community App
 
-A full-stack, cross-platform mobile app that centralizes academic discussion, Q&A, a campus marketplace, job/internship listings, events, and real-time messaging for university students — built solo from schema to UI.
+A full-stack, cross-platform mobile app that centralizes academic discussion, Q&A, a campus marketplace, job/internship listings, events, and real-time messaging for university students at any school — built solo from schema to UI.
 
 **Stack:** Flutter · Dart · Riverpod · go_router · Supabase (PostgreSQL, Auth, Realtime, Storage)
 
@@ -22,7 +22,7 @@ Most student projects are CRUD demos. This one required solving real production-
 - **Engagement** — helpful votes, saves, comments with accepted-answer marking (Q&A style), reputation scoring via Postgres functions
 - **Profile** — editable profile with avatar upload, followers/following, activity history, dark mode (persisted)
 - **Discover** — category browsing for Marketplace, Jobs, Events, Announcements, Scholarships
-- **Internship board** — SIWES placements, internships, graduate trainee schemes and remote programmes open to UNIBEN students, matched to each student's department and level. Each listing shows eligibility, documents to send, step-by-step application instructions, contacts and its source. Students draft their application email or SIWES letter from their profile in one tap, see which UNIBEN students trained at a company, and track each application from saved to offer (private to them through RLS)
+- **Internship board** — SIWES placements, internships, graduate trainee schemes and remote programmes matched to each student's department and level. Listings currently cover Benin City, Edo State and remote programmes, with more cities planned. Each listing shows eligibility, documents to send, step-by-step application instructions, contacts and its source. Students draft their application email or SIWES letter from their profile in one tap, see which UNIBEN students trained at a company, and track each application from saved to offer (private to them through RLS)
 - **Chat** — real-time 1:1 messaging with image attachments, message deletion, read-state tracking
 - **Notifications** — event-driven via Postgres triggers (comment, helpful, follow, accepted-answer)
 

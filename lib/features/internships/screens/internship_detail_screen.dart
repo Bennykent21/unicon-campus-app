@@ -631,7 +631,7 @@ class _AlumniSection extends ConsumerWidget {
     }
 
     return _Section(
-      title: 'UNIBEN students who trained here',
+      title: 'UNICON students who trained here',
       child: async.when(
         loading: () => const Padding(
           padding: EdgeInsets.symmetric(vertical: 12),
@@ -648,7 +648,7 @@ class _AlumniSection extends ConsumerWidget {
               if (others.isEmpty)
                 Text(
                   iTrained
-                      ? 'You are the first UNIBEN student listed here.'
+                      ? 'You are the first UNICON student listed here.'
                       : 'No one has added themselves yet. Trained here? Add yourself so others can ask you about it.',
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

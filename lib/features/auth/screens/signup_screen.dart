@@ -24,8 +24,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _departmentController = TextEditingController();
-  final _universityController =
-      TextEditingController(text: 'University of Benin');
+  final _universityController = TextEditingController();
   String? _level;
   bool _obscurePassword = true;
 
@@ -188,15 +187,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   Text('Optional, and you can change them later.',
                       style: theme.textTheme.bodySmall),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _universityController,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'University',
-                      prefixIcon: Icon(Icons.school_outlined, size: 20),
-                    ),
-                  ),
+                  UniversityField(controller: _universityController),
                   const SizedBox(height: 14),
                   DepartmentField(controller: _departmentController),
                   const SizedBox(height: 14),

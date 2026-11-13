@@ -187,14 +187,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                 ] else ...[
                   // ── Step 1: University details ──────────────────────────────
-                  TextFormField(
-                    controller: _universityCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'University',
-                      hintText: 'e.g. University of Lagos',
-                    ),
-                    textCapitalization: TextCapitalization.words,
-                  ),
+                  UniversityField(controller: _universityCtrl),
                   const SizedBox(height: 14),
                   DepartmentField(controller: _departmentCtrl),
                   const SizedBox(height: 14),

@@ -18,14 +18,15 @@ void main() {
     final e = ApplicationEmail.forListing(siwes,
         studentName: 'Oghosa Benedict',
         department: 'Computer Engineering',
-        level: '400L');
+        level: '400L',
+        university: 'University of Benin');
     expect(e.to, 'hr@example.com');
     expect(e.subject,
         'SIWES placement request: Oghosa Benedict, Computer Engineering, University of Benin');
     expect(
         e.body,
         contains(
-            'I am a 400L Computer Engineering student at the University of Benin'));
+            'I am a 400L Computer Engineering student at University of Benin.'));
     expect(e.body, contains('industrial training (SIWES)'));
     expect(e.body, contains('available for the full 6 months'));
     expect(e.body, contains('Dear Hiring Team,'));
@@ -36,6 +37,8 @@ void main() {
         studentName: null, department: '', level: null);
     expect(e.subject, contains('[Your full name]'));
     expect(e.body, contains('[your level] [your department]'));
+    expect(e.body, contains('student at [your university].'));
+    expect(e.subject, contains('[your university]'));
   });
 
   test('mailto encodes spaces as %20 and keeps line breaks', () {

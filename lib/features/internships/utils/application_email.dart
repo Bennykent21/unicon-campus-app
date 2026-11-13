@@ -22,10 +22,12 @@ class ApplicationEmail {
     required String? studentName,
     required String? department,
     required String? level,
+    String? university,
   }) {
     final name = _orPlaceholder(studentName, 'Your full name');
     final dept = _orPlaceholder(department, 'your department');
     final lvl = _orPlaceholder(level, 'your level');
+    final uni = _orPlaceholder(university, 'your university');
     final greeting = i.contactName != null && i.contactName!.isNotEmpty
         ? 'Dear ${i.contactName},'
         : 'Dear Hiring Team,';
@@ -33,9 +35,9 @@ class ApplicationEmail {
     final isSiwes = i.kind == InternshipKind.siwes;
     final subject = switch (i.kind) {
       InternshipKind.siwes =>
-        'SIWES placement request: $name, $dept, University of Benin',
+        'SIWES placement request: $name, $dept, $uni',
       InternshipKind.graduateTrainee => 'Application for ${i.title}: $name',
-      _ => 'Application for ${i.title}: $name, University of Benin',
+      _ => 'Application for ${i.title}: $name, $uni',
     };
 
     final ask = isSiwes
@@ -52,7 +54,7 @@ class ApplicationEmail {
     final body = [
       greeting,
       '',
-      'I am a $lvl $dept student at the University of Benin, Benin City. '
+      'I am a $lvl $dept student at $uni. '
           '$ask.$duration',
       '',
       '$attachments I would be glad to provide anything else you need, and to attend an interview at your convenience.',
