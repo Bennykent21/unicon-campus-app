@@ -129,6 +129,28 @@ jobs:
             Download the `.apk` below on your Android phone and open it. You may need to allow installs from your browser.
             The `-arm64` file is smaller and works on almost every phone; if it won't install, use the other one.
 
+      # Release notes come from this version's section in CHANGELOG.md.
+      - name: Write release notes
+        if: env.VERSION != ''
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" {found=1; next}
+            found && /^## \[/ {exit}
+            found {print}
+          ' CHANGELOG.md > dist/notes.md
+          if [ ! -s dist/notes.md ]; then
+            echo "CHANGELOG.md has no section for $VERSION. Add one before releasing." >&2
+            exit 1
+          fi
+          {
+            echo ""
+            echo "### Download"
+            echo "Download \`unicon-v$VERSION-arm64.apk\` on your Android phone and open it (it fits almost every phone). If it won't install, use \`unicon-v$VERSION.apk\`. You may need to allow installs from your browser."
+            echo ""
+            echo "Built from \`${{ github.sha }}\` on \`${{ github.ref_name }}\`."
+          } >> dist/notes.md
+          cat dist/notes.md
+
       - name: Publish official release
         if: env.VERSION != ''
         uses: softprops/action-gh-release@v2
@@ -138,8 +160,4 @@ jobs:
           prerelease: false
           make_latest: "true"
           files: dist/*.apk
-          body: |
-            UNICON, the campus community app for University of Benin students.
-            Built from `${{ github.sha }}` on `${{ github.ref_name }}`.
-
-            Download `unicon-v${{ env.VERSION }}-arm64.apk` on your Android phone and open it (it fits almost every phone). If it won't install, use `unicon-v${{ env.VERSION }}.apk`. You may need to allow installs from your browser.
+          body_path: dist/notes.md
