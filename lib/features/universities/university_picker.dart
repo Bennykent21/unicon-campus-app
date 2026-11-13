@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets/state_views.dart';
+import 'request_university_dialog.dart';
 import 'university.dart';
 
 /// Form field for choosing a university from the list. Required: a student's
@@ -101,16 +102,36 @@ class _UniversitySheetState extends ConsumerState<_UniversitySheet> {
                   if (shown.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(
-                        'No university matches "$_query". More schools are being added.',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium,
+                      child: Column(
+                        children: [
+                          Text(
+                            'No university matches "$_query" yet.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          FilledButton.tonal(
+                            onPressed: () => showRequestUniversityDialog(
+                                context,
+                                initialName: _query.trim()),
+                            child: const Text('Ask us to add it'),
+                          ),
+                        ],
                       ),
                     );
                   }
                   return ListView.builder(
-                    itemCount: shown.length,
+                    itemCount: shown.length + 1,
                     itemBuilder: (_, i) {
+                      if (i == shown.length) {
+                        return ListTile(
+                          leading: const Icon(Icons.add_circle_outline),
+                          title: const Text("Can't find your university?"),
+                          subtitle: const Text('Ask us to add it'),
+                          onTap: () => showRequestUniversityDialog(context,
+                              initialName: _query.trim()),
+                        );
+                      }
                       final u = shown[i];
                       return ListTile(
                         title: Text(u.name),

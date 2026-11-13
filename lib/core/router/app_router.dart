@@ -15,6 +15,7 @@ import '../../features/discover/screens/discover_screen.dart';
 import '../../features/discover/screens/discover_category_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/profile_setup_screen.dart';
+import '../../features/universities/manage_universities_screen.dart';
 import '../../features/profile/screens/my_posts_screen.dart';
 import '../../features/profile/screens/user_profile_screen.dart';
 import '../../features/profile/screens/follow_list_screen.dart';
@@ -97,6 +98,10 @@ final appRouter = GoRouter(
       pageBuilder: (_, __) => const MaterialPage(
           fullscreenDialog: true,
           child: ProfileSetupScreen(isFirstTime: false)),
+    ),
+    GoRoute(
+      path: '/universities/manage',
+      builder: (_, __) => const ManageUniversitiesScreen(),
     ),
     GoRoute(
       path: '/post/:id',

@@ -126,7 +126,7 @@ class _InternshipsScreenState extends ConsumerState<InternshipsScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'Listings cover Benin City, Edo State and remote roles for now. More cities are coming.',
+                            'Most listings are around Benin City and Edo State, plus remote roles open anywhere. Listings for more cities are being added.',
                             style: theme.textTheme.bodySmall,
                           ),
                         ),

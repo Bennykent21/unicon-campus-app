@@ -197,6 +197,10 @@ class InternshipCard extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     DeadlinePill(internship: i),
+                    if (i.universityShortName != null)
+                      _ProofLine(
+                          icon: Icons.lock_outline,
+                          text: 'Only for ${i.universityShortName} students'),
                     if (tracked && stage != ApplicationStage.saved)
                       Text(stage!.label,
                           style: TextStyle(
