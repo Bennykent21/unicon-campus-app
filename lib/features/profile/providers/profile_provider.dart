@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/supabase/supabase_service.dart';
+import '../../../core/utils/app_logger.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../home/models/post_model.dart';
 import '../models/profile_model.dart';
 
@@ -129,9 +131,12 @@ class ProfileUpdateNotifier extends StateNotifier<ProfileUpdateState> {
 
       state = const ProfileUpdateState(status: ProfileUpdateStatus.success);
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('Saving profile failed',
+          name: 'profile', error: e, stackTrace: st);
       state = ProfileUpdateState(
-          status: ProfileUpdateStatus.error, errorMessage: e.toString());
+          status: ProfileUpdateStatus.error,
+          errorMessage: friendlyError(e, action: 'save your profile'));
       return false;
     }
   }
